@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  testit-mcp-server:
+    build: .
+    container_name: testit-mcp-server
+    environment:
+      - TESTIT_URL=${TESTIT_URL:-https://testit.labs.jb.gg}
+      - TESTIT_TOKEN=${TESTIT_TOKEN}
+      - PROJECT_ID=${PROJECT_ID}
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+

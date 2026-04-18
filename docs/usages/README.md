@@ -1,0 +1,31 @@
+# User Usage Docs
+
+This directory contains end-user setup and usage guides for `testit-mcp-server`.
+
+## Runtime Options
+
+- [Docker](./docker.md)
+- [NPX](./npx.md)
+- [Running Locally](./running-locally.md)
+
+## MCP Client Integrations
+
+- [Cursor, Claude Code, Claude Desktop](./integrations.md)
+
+## Prompt Examples
+
+- [Examples Index](./examples/README.md)
+- [System Prompt Template (Token-Saving)](./examples/system-prompt-template.md)
+- [Test Cases](./examples/test-cases.md)
+- [Launches](./examples/launches.md)
+- [Test Results](./examples/test-results.md)
+- [Test Plans](./examples/test-plans.md)
+- [Custom Fields](./examples/custom-fields.md)
+- [Defects](./examples/defects.md)
+- [Mutes](./examples/mutes.md)
+- [Members](./examples/members.md)
+- [Shared Steps](./examples/shared-steps.md)
+- [Environments](./examples/environments.md)
+- [Workflows](./examples/workflows.md)
+
+

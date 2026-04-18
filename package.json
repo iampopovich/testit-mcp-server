@@ -1,0 +1,65 @@
+{
+  "name": "testit-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for TestIT (WorkItems, TestRuns, TestPlans)",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "testit-mcp-server": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "docs:generate": "tsx scripts/generate-tool-catalog.ts",
+    "lint": "eslint . --ext .ts --max-warnings=0",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "dev:ui": "tsx scripts/dev-ui.ts",
+    "test": "vitest run",
+    "test:integration": "vitest run"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "testit",
+    "quality-assurance",
+    "test-automation",
+    "test-management",
+    "typescript",
+    "test-automation-tools",
+    "test-case-management",
+    "test-execution",
+    "test-reporting",
+    "llm-integration",
+    "agent-based-testing",
+    "test-analytics",
+    "agent-tool-integration"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iampopovich/testit-mcp-server.git"
+  },
+  "homepage": "https://github.com/iampopovich/testit-mcp-server#readme",
+  "bugs": {
+    "url": "https://github.com/iampopovich/testit-mcp-server/issues"
+  },
+  "author": "iampopovich",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "@typescript-eslint/eslint-plugin": "^8.46.1",
+    "@typescript-eslint/parser": "^8.46.1",
+    "eslint": "^10.0.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.4"
+  }
+}
+

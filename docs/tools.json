@@ -1,0 +1,2359 @@
+{
+  "generatedAt": "2026-04-04T18:35:38.235Z",
+  "totalTools": 100,
+  "categories": [
+    {
+      "name": "Test Cases",
+      "tools": [
+        {
+          "name": "list_test_cases",
+          "description": "List test cases for a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "search": {
+                "type": "string"
+              },
+              "filterId": {
+                "type": "number",
+                "description": "Saved filter ID. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              },
+              "sort": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "search_test_cases",
+          "description": "Search test cases by TQL query.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "rql": {
+                "type": "string",
+                "description": "TQL (TestIT Query Language) filter expression. Operators: = != ~= (contains) > < >= <= in [...] and or not. IMPORTANT: 'not in' is written as 'not field in [...]', NOT 'field not in [...]'. Test case fields: id, name, tag, issue, role[\"R\"], member, cf[\"F\"], cfv, layer, status, workflow, testPlan, automation (boolean), muted, mutedDate, createdDate, createdBy, lastModifiedDate, lastModifiedBy. Dates use 13-digit Unix ms timestamps. Examples: name ~= \"login\" | automation = true | automation = false | status = \"Active\" | tag in [\"smoke\", \"regression\"] | not tag in [\"nightly\"] | cf[\"Epic\"] = \"Auth\" | name ~= \"checkout\" and muted = false | (createdBy = \"a\" or createdBy = \"b\") and automation = true"
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              },
+              "sort": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "rql"
+            ]
+          }
+        },
+        {
+          "name": "get_test_case",
+          "description": "Get a test case by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "create_test_case",
+          "description": "Create a new test case. payload.projectId defaults to TESTIT_PROJECT_ID env when omitted. payload.precondition (string) is the preconditions field — always use this for preconditions/prerequisites text, NOT payload.description. payload.description (string) is the general test case description — always populate this with a meaningful summary of what the test case verifies. payload.customFields supports values like { customField: { id }, id, name }. payload.steps is an optional array of step objects with { name (step text), expectedResult (optional expected result text) } — steps are created after the test case. When a step has multiple expected results, list them in expectedResult separated by semicolons (e.g. \"Result A; Result B\") or as a bullet list (lines starting with -, *, or a number).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "update_test_case_step",
+          "description": "Update a test case step by ID. Supports updating body text and/or expectedResult. If expectedResult is provided, the expected result node is created automatically if it does not exist yet.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "stepId": {
+                "type": "number",
+                "description": "Step ID to update. Must be a number (integer), not a string."
+              },
+              "body": {
+                "type": "string",
+                "description": "New step body text."
+              },
+              "expectedResult": {
+                "type": "string",
+                "description": "Expected result text for this step."
+              }
+            },
+            "required": [
+              "stepId"
+            ]
+          }
+        },
+        {
+          "name": "update_test_case",
+          "description": "Update an existing test case. payload.customFields supports values like { customField: { id }, id, name }.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Test case ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "id",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "delete_test_case",
+          "description": "Delete a test case by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "add_test_case_tags_bulk",
+          "description": "Add one or multiple tags to one or multiple test cases using bulk API.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "testCaseId": {
+                "type": "number",
+                "description": "Test case ID. Must be a number (integer), not a string."
+              },
+              "testCaseIds": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "tag": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "remove_test_case_tags_bulk",
+          "description": "Remove one or multiple tags from one or multiple test cases using bulk API.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "testCaseId": {
+                "type": "number",
+                "description": "Test case ID. Must be a number (integer), not a string."
+              },
+              "testCaseIds": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "tagId": {
+                "type": "number",
+                "description": "Tag ID. Must be a number (integer), not a string."
+              },
+              "tagIds": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "add_test_case_external_links_bulk",
+          "description": "Add one or multiple external links to one or multiple test cases using bulk API.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "testCaseId": {
+                "type": "number",
+                "description": "Test case ID. Must be a number (integer), not a string."
+              },
+              "testCaseIds": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "link": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "get_test_case_overview",
+          "description": "Get test case overview data.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testCaseId": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "testCaseId"
+            ]
+          }
+        },
+        {
+          "name": "get_test_case_history",
+          "description": "Get test case run history.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Test case ID. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              },
+              "sort": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "get_test_case_scenario",
+          "description": "Get scenario for a test case.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Test case ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "get_test_case_steps",
+          "description": "Get manual scenario steps for a test case. Returns a normalized scenario with root step and a flat map of all steps (scenarioSteps), where each step contains body, expectedResult, children IDs, and optional sharedStepId.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Test case ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "get_test_case_tags",
+          "description": "Get tags assigned to a test case.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testCaseId": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "testCaseId"
+            ]
+          }
+        },
+        {
+          "name": "set_test_case_tags",
+          "description": "Set tags for a test case.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testCaseId": {
+                "type": "number",
+                "description": "Test case ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            },
+            "required": [
+              "testCaseId",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "get_test_case_issues",
+          "description": "Get linked issues for a test case.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testCaseId": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "testCaseId"
+            ]
+          }
+        },
+        {
+          "name": "set_test_case_issues",
+          "description": "Set linked issues for a test case.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testCaseId": {
+                "type": "number",
+                "description": "Test case ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            },
+            "required": [
+              "testCaseId",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "restore_test_case",
+          "description": "Restore a deleted test case.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "list_project_custom_fields",
+          "description": "List custom fields configured for a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "query": {
+                "type": "string"
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              },
+              "sort": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "list_custom_field_values",
+          "description": "List values for a custom field in a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "customFieldId": {
+                "type": "number",
+                "description": "Custom field ID. Must be a number (integer), not a string."
+              },
+              "query": {
+                "type": "string"
+              },
+              "global": {
+                "type": "boolean"
+              },
+              "testCaseSearch": {
+                "type": "string"
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              },
+              "sort": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "customFieldId"
+            ]
+          }
+        },
+        {
+          "name": "get_test_case_custom_fields",
+          "description": "Get custom field values for a test case.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testCaseId": {
+                "type": "number",
+                "description": "Test case ID. Must be a number (integer), not a string."
+              },
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              }
+            },
+            "required": [
+              "testCaseId"
+            ]
+          }
+        },
+        {
+          "name": "set_test_case_custom_fields",
+          "description": "Add custom field values for a test case via bulk API. Supports grouped values [{ customField: { id }, values: [{ id|name }] }] and flat values [{ id|name, customField: { id } }].",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testCaseId": {
+                "type": "number",
+                "description": "Test case ID. Must be a number (integer), not a string."
+              },
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "payload": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            },
+            "required": [
+              "testCaseId",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "list_test_case_attachments",
+          "description": "List attachments for a test case.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testCaseId": {
+                "type": "number",
+                "description": "Test case ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "testCaseId"
+            ]
+          }
+        },
+        {
+          "name": "upload_test_case_attachment",
+          "description": "Upload a file attachment to a test case. Provide file content as a base64-encoded string.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testCaseId": {
+                "type": "number",
+                "description": "Test case ID. Must be a number (integer), not a string."
+              },
+              "filename": {
+                "type": "string",
+                "description": "File name including extension, e.g. screenshot.png."
+              },
+              "contentType": {
+                "type": "string",
+                "description": "MIME type, e.g. image/png or application/pdf."
+              },
+              "contentBase64": {
+                "type": "string",
+                "description": "File content encoded as a base64 string."
+              }
+            },
+            "required": [
+              "testCaseId",
+              "filename",
+              "contentType",
+              "contentBase64"
+            ]
+          }
+        },
+        {
+          "name": "delete_test_case_attachment",
+          "description": "Delete an attachment from a test case by attachment ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "attachmentId": {
+                "type": "number",
+                "description": "Attachment ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "attachmentId"
+            ]
+          }
+        },
+        {
+          "name": "get_test_case_attachment_content",
+          "description": "Download the binary content of a test case attachment. Returns base64-encoded content with its MIME type.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "attachmentId": {
+                "type": "number",
+                "description": "Attachment ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "attachmentId"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Launches",
+      "tools": [
+        {
+          "name": "list_launches",
+          "description": "List launches for a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "search": {
+                "type": "string"
+              },
+              "filterId": {
+                "type": "number",
+                "description": "Saved filter ID. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              },
+              "sort": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "search_launches",
+          "description": "Search launches by TQL query.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "rql": {
+                "type": "string",
+                "description": "TQL (TestIT Query Language) filter expression. Operators: = != ~= (contains) > < >= <= in [...] and or not. IMPORTANT: 'not in' is written as 'not field in [...]', NOT 'field not in [...]'. Launch fields: id, name, tag, issue, job, ev[\"VAR\"], evv, closed (boolean), createdDate, createdBy, lastModifiedDate, lastModifiedBy. Dates use 13-digit Unix ms timestamps. Examples: name ~= \"nightly\" | closed = false | closed = true | tag in [\"release\", \"pre-release\"] | job = \"jenkins_master\" | ev[\"OS\"] = \"Linux\" | not tag in [\"devbuild\"] | name ~= \"regression\" and closed = true"
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              },
+              "sort": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "rql"
+            ]
+          }
+        },
+        {
+          "name": "get_launch",
+          "description": "Get a launch by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "create_launch",
+          "description": "Create a new launch. payload.projectId defaults to TESTIT_PROJECT_ID env when omitted.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "update_launch",
+          "description": "Update an existing launch.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Launch ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "id",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "delete_launch",
+          "description": "Delete a launch by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "close_launch",
+          "description": "Close an open launch.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "reopen_launch",
+          "description": "Reopen a closed launch.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "get_launch_statistic",
+          "description": "Get launch statistics.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "get_launch_progress",
+          "description": "Get launch progress widget data.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "add_test_cases_to_launch",
+          "description": "Add test cases to a launch.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Launch ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "id",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "add_test_plan_to_launch",
+          "description": "Add a test plan to a launch.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Launch ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "id",
+              "payload"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Test Results",
+      "tools": [
+        {
+          "name": "list_test_results",
+          "description": "List test results for a launch.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "launchId": {
+                "type": "number"
+              },
+              "search": {
+                "type": "string"
+              },
+              "filterId": {
+                "type": "number",
+                "description": "Saved filter ID. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              },
+              "sort": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "launchId"
+            ]
+          }
+        },
+        {
+          "name": "search_test_results",
+          "description": "Search test results by TQL query.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "rql": {
+                "type": "string",
+                "description": "TQL (TestIT Query Language) filter expression. Operators: = != ~= (contains) > < >= <= in [...] and or not. IMPORTANT: 'not in' is written as 'not field in [...]', NOT 'field not in [...]'. Test result fields: id, name, fullName, testCase, status, category, tag, issue, role[\"R\"], member, testedBy, cf[\"F\"], cfv, ev[\"VAR\"], evv, layer, muted (boolean), hidden (boolean), launch, createdDate, createdBy, lastModifiedDate, lastModifiedBy. Dates use 13-digit Unix ms timestamps. Examples: status = \"failed\" | status in [\"failed\", \"broken\"] | name ~= \"login\" | muted = false | hidden = false | launch = \"release-1.0\" | ev[\"OS\"] = \"Linux\" | not tag in [\"nightly\"] | status = \"failed\" and muted = false"
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              },
+              "sort": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "rql"
+            ]
+          }
+        },
+        {
+          "name": "get_test_result",
+          "description": "Get a test result by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "create_test_result",
+          "description": "Create a new test result.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "update_test_result",
+          "description": "Update an existing test result.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Test result ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "id",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "get_test_result_history",
+          "description": "Get history for a test result.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Test result ID. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              },
+              "sort": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "assign_test_result",
+          "description": "Assign a test result. payload must include username.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Test result ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "id",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "resolve_test_result",
+          "description": "Resolve a test result. payload must include status.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Test result ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "id",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "get_test_result_retries",
+          "description": "Get the retry history for a test result. Returns the list of previous attempts for the same test in the same launch. Key tool for flaky test detection: if a test failed on attempt 1 but passed on attempt 2, it is a flaky test, not a real failure. Check status across retries to assess reliability.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Test result ID. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "list_test_result_attachments",
+          "description": "List attachments (screenshots, logs, HAR files, etc.) for a test result. Returns attachment metadata: id, name, contentType, size. Use this to discover what evidence is available before calling get_test_result_attachment_content.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testResultId": {
+                "type": "number",
+                "description": "Test result ID. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size."
+              }
+            },
+            "required": [
+              "testResultId"
+            ]
+          }
+        },
+        {
+          "name": "get_test_result_attachment_content",
+          "description": "Download the binary content of a test result attachment. Returns base64-encoded content with its MIME type. Use attachment ID from list_test_result_attachments. For text-based attachments (logs, JSON, XML): decode base64 to read the content. For images (screenshots): the base64 PNG/JPEG can be rendered directly.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "attachmentId": {
+                "type": "number",
+                "description": "Attachment ID from list_test_result_attachments. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "attachmentId"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Test Plans",
+      "tools": [
+        {
+          "name": "list_test_plans",
+          "description": "List test plans for a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "search": {
+                "type": "string"
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              },
+              "sort": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "get_test_plan",
+          "description": "Get a test plan by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "create_test_plan",
+          "description": "Create a new test plan. payload.projectId defaults to TESTIT_PROJECT_ID env when omitted.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "update_test_plan",
+          "description": "Update an existing test plan.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Test plan ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "id",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "delete_test_plan",
+          "description": "Delete a test plan by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "run_test_plan",
+          "description": "Run a test plan by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Test plan ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "tools": [
+        {
+          "name": "get_automation_chart",
+          "description": "Get automation trend chart data for a project (test automation coverage over time).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "tcRql": {
+                "type": "string",
+                "description": "RQL filter for test cases."
+              },
+              "launchRql": {
+                "type": "string",
+                "description": "RQL filter for launches."
+              },
+              "from": {
+                "type": "number",
+                "description": "Start of time range (Unix timestamp ms). Must be a number, not a string."
+              },
+              "to": {
+                "type": "number",
+                "description": "End of time range (Unix timestamp ms). Must be a number, not a string."
+              },
+              "offset": {
+                "type": "number",
+                "description": "Timezone offset in minutes. Must be a number, not a string."
+              },
+              "interval": {
+                "type": "string",
+                "description": "Time interval for grouping. One of: \"hour\", \"day\", \"week\", \"month\"."
+              }
+            }
+          }
+        },
+        {
+          "name": "get_group_by_automation",
+          "description": "Get test case counts grouped by automation status for a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "tcRql": {
+                "type": "string",
+                "description": "RQL filter for test cases."
+              }
+            }
+          }
+        },
+        {
+          "name": "get_group_by_status",
+          "description": "Get test case counts grouped by status for a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "tcRql": {
+                "type": "string",
+                "description": "RQL filter for test cases."
+              }
+            }
+          }
+        },
+        {
+          "name": "get_launch_duration_histogram",
+          "description": "Get histogram of launch durations for a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "tcRql": {
+                "type": "string",
+                "description": "RQL filter for test cases."
+              },
+              "launchRql": {
+                "type": "string",
+                "description": "RQL filter for launches."
+              },
+              "from": {
+                "type": "number",
+                "description": "Start of time range (Unix timestamp ms). Must be a number, not a string."
+              },
+              "to": {
+                "type": "number",
+                "description": "End of time range (Unix timestamp ms). Must be a number, not a string."
+              },
+              "buckets": {
+                "type": "number",
+                "description": "Number of histogram buckets (default: 10). Must be a number, not a string."
+              }
+            }
+          }
+        },
+        {
+          "name": "get_mute_trend",
+          "description": "Get trend of muted test cases over time for a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "from": {
+                "type": "number",
+                "description": "Start of time range (Unix timestamp ms). Must be a number, not a string."
+              },
+              "to": {
+                "type": "number",
+                "description": "End of time range (Unix timestamp ms). Must be a number, not a string."
+              },
+              "interval": {
+                "type": "string",
+                "description": "Time interval for grouping. One of: \"hour\", \"day\", \"week\", \"month\"."
+              }
+            }
+          }
+        },
+        {
+          "name": "get_statistic_trend",
+          "description": "Get test result statistic trend over time for a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "tcRql": {
+                "type": "string",
+                "description": "RQL filter for test cases."
+              },
+              "launchRql": {
+                "type": "string",
+                "description": "RQL filter for launches."
+              },
+              "from": {
+                "type": "number",
+                "description": "Start of time range (Unix timestamp ms). Must be a number, not a string."
+              },
+              "to": {
+                "type": "number",
+                "description": "End of time range (Unix timestamp ms). Must be a number, not a string."
+              },
+              "offset": {
+                "type": "number",
+                "description": "Timezone offset in minutes. Must be a number, not a string."
+              },
+              "interval": {
+                "type": "string",
+                "description": "Time interval for grouping. One of: \"hour\", \"day\", \"week\", \"month\"."
+              }
+            }
+          }
+        },
+        {
+          "name": "get_tc_last_result",
+          "description": "Get last test result for each test case in a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              }
+            }
+          }
+        },
+        {
+          "name": "get_tc_success_rate",
+          "description": "Get test case success rate analytics over time for a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "tcRql": {
+                "type": "string",
+                "description": "RQL filter for test cases."
+              },
+              "launchRql": {
+                "type": "string",
+                "description": "RQL filter for launches."
+              },
+              "from": {
+                "type": "number",
+                "description": "Start of time range (Unix timestamp ms). Must be a number, not a string."
+              },
+              "to": {
+                "type": "number",
+                "description": "End of time range (Unix timestamp ms). Must be a number, not a string."
+              },
+              "offset": {
+                "type": "number",
+                "description": "Timezone offset in minutes. Must be a number, not a string."
+              },
+              "interval": {
+                "type": "string",
+                "description": "Time interval for grouping. One of: \"hour\", \"day\", \"week\", \"month\"."
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboards",
+      "tools": [
+        {
+          "name": "list_dashboards",
+          "description": "List all dashboards for a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              }
+            }
+          }
+        },
+        {
+          "name": "create_dashboard",
+          "description": "Create a new dashboard in a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "name": {
+                "type": "string",
+                "description": "Dashboard name."
+              },
+              "shared": {
+                "type": "boolean",
+                "description": "Whether the dashboard is shared with the project."
+              },
+              "payload": {
+                "type": "object",
+                "description": "Additional dashboard fields (e.g. description, widgets)."
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        },
+        {
+          "name": "get_dashboard",
+          "description": "Get a dashboard by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Dashboard ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "update_dashboard",
+          "description": "Update dashboard fields (name, shared status, etc.).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Dashboard ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "object",
+                "description": "Fields to update (e.g. name, shared)."
+              }
+            },
+            "required": [
+              "id",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "delete_dashboard",
+          "description": "Delete a dashboard by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Dashboard ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "copy_dashboard",
+          "description": "Copy an existing dashboard to the same or another project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Source dashboard ID. Must be a number (integer), not a string."
+              },
+              "name": {
+                "type": "string",
+                "description": "Name for the copied dashboard."
+              },
+              "projectId": {
+                "type": "number",
+                "description": "Target project ID (defaults to source project)."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Target project name (alternative to projectId)."
+              },
+              "payload": {
+                "type": "object",
+                "description": "Additional copy options."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "get_widget_data",
+          "description": "Get data for a specific dashboard widget.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Widget ID. Must be a number (integer), not a string."
+              },
+              "projectId": {
+                "type": "number",
+                "description": "Project ID for widget context. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "from": {
+                "type": "number",
+                "description": "Start of time range (Unix timestamp ms). Must be a number, not a string."
+              },
+              "to": {
+                "type": "number",
+                "description": "End of time range (Unix timestamp ms). Must be a number, not a string."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Defects",
+      "tools": [
+        {
+          "name": "list_defects",
+          "description": "List defect records for a project. Defects group similar test result failures by root cause. Each defect has a name, status (open/closed), and optional matcher rules. Use this as the entry point for failure pattern analysis: 'what are the top open defects in this project right now?'",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "status": {
+                "type": "string",
+                "description": "Filter by defect status. Values: OPEN, CLOSED. Omit to return all."
+              },
+              "name": {
+                "type": "string",
+                "description": "Filter by partial defect name."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size."
+              }
+            }
+          }
+        },
+        {
+          "name": "get_defect",
+          "description": "Get a defect by ID. Returns the defect name, status, description, and matcher configuration.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Defect ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "create_defect",
+          "description": "Create a new defect record to group a novel failure pattern. payload must include: name (string), projectId (number). Optional: description (string).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Required: name, projectId. Optional: description."
+              }
+            },
+            "required": [
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "update_defect",
+          "description": "Update defect name, description, or status.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Defect ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "id",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "get_defect_test_results",
+          "description": "Get the test results grouped under a specific defect. Use this to see how many failures belong to this defect and in which launches they appeared.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Defect ID. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "get_defect_test_cases",
+          "description": "Get the test cases affected by a specific defect. Use this to understand which test scenarios are impacted by the failure pattern.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Defect ID. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "get_defect_launches",
+          "description": "Get launches in which a specific defect has appeared. Use this to understand the blast radius: is this defect appearing in every run or only in specific environments?",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Defect ID. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "get_launch_defects",
+          "description": "Get all defects present in a specific launch. This is the fastest way to get a defect summary for a launch: 'what are all the distinct failure patterns in this test run?'",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Launch ID. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "find_similar_failures",
+          "description": "Find test results that match a defect pattern within a launch. Use this to detect flaky tests and group failures by root cause: pass launchId to scope the search, optionally pass a defectId to check match against a specific defect. Returns test results that are candidates for linking to the defect.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "launchId": {
+                "type": "number",
+                "description": "Launch ID to scope the search. Must be a number (integer), not a string."
+              },
+              "defectId": {
+                "type": "number",
+                "description": "Defect ID to match against. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size."
+              }
+            }
+          }
+        },
+        {
+          "name": "link_defect_to_test_results",
+          "description": "Link one or multiple test results to a defect record (bulk API). payload must include: defectId (number) and testResultIds (array of numbers).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Required: defectId (number), testResultIds (array of numbers)."
+              }
+            },
+            "required": [
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "bulk_close_defects",
+          "description": "Close multiple defects at once — mark them as resolved after a fix is confirmed. payload must include: ids (array of defect IDs).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Required: ids (array of defect ID numbers)."
+              }
+            },
+            "required": [
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "bulk_reopen_defects",
+          "description": "Reopen multiple closed defects — use when a regression is detected after a fix was marked complete. payload must include: ids (array of defect IDs).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Required: ids (array of defect ID numbers)."
+              }
+            },
+            "required": [
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "link_issue_to_defect",
+          "description": "Link an external issue (Jira, GitHub, etc.) to a defect record. payload must include: url (string) and name (string). Use this to associate a tracker ticket with a failure pattern.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Defect ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Required: url (string), name (string). Optional: type (string)."
+              }
+            },
+            "required": [
+              "id",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "unlink_issue_from_defect",
+          "description": "Remove the external issue link from a defect record.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Defect ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "apply_defect_matchers",
+          "description": "Apply all configured defect matcher rules to a launch. This auto-triages unresolved test results by matching them to existing defect records based on error message patterns. Run this after a launch completes to auto-group failures.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Launch ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shared Steps",
+      "tools": [
+        {
+          "name": "list_shared_steps",
+          "description": "List shared steps (reusable step library) for a project. Shared steps are referenced from test case scenarios via sharedStepId. Use this to discover the available shared step library before reading test case steps.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "search": {
+                "type": "string",
+                "description": "Text search filter."
+              },
+              "archived": {
+                "type": "boolean",
+                "description": "Filter by archived status. Omit to return active steps only."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              }
+            }
+          }
+        },
+        {
+          "name": "get_shared_step",
+          "description": "Get a shared step by ID. Returns metadata: name, project, archived status.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Shared step ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "get_shared_step_steps",
+          "description": "Get the full normalized scenario (list of steps) inside a shared step. This is the key tool for resolving sharedStepId references in test case scenarios: when get_test_case_steps returns a step with sharedStepId, call this tool to inline the actual step content. Returns the same NormalizedScenarioDto format as get_test_case_steps.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Shared step ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "get_shared_step_usage",
+          "description": "Get the list of test cases that use a specific shared step. Use this for impact analysis before editing or archiving a shared step: shows which test cases would be affected.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Shared step ID. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "create_shared_step",
+          "description": "Create a new shared step in a project. payload must include at minimum: name (string) and projectId (number). Use this to extract repeated test steps into a reusable library.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Shared step creation data. Required fields: name, projectId."
+              }
+            },
+            "required": [
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "update_shared_step",
+          "description": "Update shared step metadata (name, etc.) by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Shared step ID. Must be a number (integer), not a string."
+              },
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "id",
+              "payload"
+            ]
+          }
+        },
+        {
+          "name": "archive_shared_step",
+          "description": "Archive a shared step to retire it from active use. Archived steps remain readable but are hidden from the active library. Run get_shared_step_usage first to check impact before archiving.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Shared step ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "unarchive_shared_step",
+          "description": "Restore an archived shared step back to active status.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "Shared step ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Environments",
+      "tools": [
+        {
+          "name": "list_env_vars",
+          "description": "List all environment variable definitions (keys) available in the system. Environment variables track test configuration context: browser, OS, environment name, build number, etc. Use this to discover what ev[] keys are available before constructing TQL filters like ev[\"browser\"] = \"Chrome\" or ev[\"os\"] = \"Linux\" in search_test_results or search_launches.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "suggest_env_vars",
+          "description": "Search environment variable definitions by name. Returns matching env var keys with their IDs. Use this to find the exact name of an env var key before querying values.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Partial env var name to search for."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              }
+            }
+          }
+        },
+        {
+          "name": "list_env_var_schemas",
+          "description": "List environment variable schema definitions for a project. Schemas define which env var keys are tracked and displayed for launches in this project. Use this to understand what configuration context is captured per launch in a given project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "number",
+                "description": "Project ID. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              }
+            }
+          }
+        },
+        {
+          "name": "list_env_var_values",
+          "description": "List all recorded values for a specific environment variable key. Returns the distinct values that have been used across test runs (e.g. all browser versions recorded). Use envVarId from list_env_vars. Useful for building precise TQL filters: know that ev[\"browser\"] has values [\"Chrome 123\", \"Firefox 115\"].",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "envVarId": {
+                "type": "number",
+                "description": "Environment variable ID from list_env_vars. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "envVarId"
+            ]
+          }
+        },
+        {
+          "name": "suggest_env_var_values",
+          "description": "Search for recorded environment variable values by partial text. Optionally scope by envVarId, projectId, or launchId. Use this to autocomplete valid values for TQL ev[] filters before running a search.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Partial value text to search for."
+              },
+              "envVarId": {
+                "type": "number",
+                "description": "Filter by specific env var key ID. Must be a number (integer), not a string."
+              },
+              "projectId": {
+                "type": "number",
+                "description": "Scope to a project. Must be a number (integer), not a string."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "launchId": {
+                "type": "number",
+                "description": "Scope to a specific launch. Must be a number (integer), not a string."
+              },
+              "page": {
+                "type": "number",
+                "description": "Page number, 0-based. Must be a number (integer), not a string."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size. Must be a number (integer), not a string."
+              }
+            }
+          }
+        },
+        {
+          "name": "get_test_result_env_vars",
+          "description": "Get the environment variable values recorded for a specific test result. Shows what configuration context (browser, OS, env name, build) this result ran against. Use this when investigating a failure to understand if the environment is a factor: e.g. 'does this only fail on Chrome 124 but not on Firefox?'",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testResultId": {
+                "type": "number",
+                "description": "Test result ID. Must be a number (integer), not a string."
+              }
+            },
+            "required": [
+              "testResultId"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+
+
