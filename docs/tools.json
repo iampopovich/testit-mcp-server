@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T14:38:20.502Z",
-  "totalTools": 119,
+  "generatedAt": "2026-11-12T14:52:20.597Z",
+  "totalTools": 129,
   "categories": [
     {
       "name": "Projects",
@@ -1789,6 +1789,98 @@
           }
         },
         {
+          "name": "create_test_run_from_test_points",
+          "description": "Create a test run inside a test plan from explicit selectors: for each configuration, the work items whose test points to include. Like create_test_run_from_work_items, only AUTOMATED test points are accepted.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "testPlanId": {
+                "type": "string"
+              },
+              "testPointSelectors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "configurationId": {
+                      "type": "string"
+                    },
+                    "workItemIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "configurationId",
+                    "workItemIds"
+                  ]
+                }
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "testPlanId",
+              "testPointSelectors"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "rerun_test_run_results",
+          "description": "Re-run autotest results of a run: each selected result gets a new pending attempt and the run goes back to InProgress. Submit new results via submit_test_run_results; attempts are listed by get_test_result_reruns.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test run UUID."
+              },
+              "testResultIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Non-empty."
+              }
+            },
+            "required": [
+              "id",
+              "testResultIds"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
           "name": "create_test_run_from_work_items",
           "description": "Create a test run inside a test plan for the given work items x configurations (the plan becomes InProgress). Only AUTOMATED work items are accepted (linked to an autotest, see link_autotest_work_item); TestIT rejects manual ones. Results are pre-created and filled via submit_test_run_results; the run completes when all results are in.",
           "inputSchema": {
@@ -2226,6 +2318,71 @@
             "readOnlyHint": false,
             "destructiveHint": false,
             "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_test_result_reruns",
+          "description": "All attempts of a test result (original + reruns) with runNumber, outcome and status. The original result keeps its status; later attempts are separate results.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test result UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_test_results_statistics",
+          "description": "Counts of test results by status (passed/failed/skipped/blocked/...) and failure category for a filter, e.g. one or more test runs.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testRunIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "configurationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "statusCodes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "name": {
+                "type": "string"
+              },
+              "namespace": {
+                "type": "string"
+              },
+              "className": {
+                "type": "string"
+              },
+              "filter": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Raw TestResultsFilterApiModel."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
             "openWorldHint": true
           }
         },
@@ -3098,6 +3255,112 @@
             "idempotentHint": true,
             "openWorldHint": true
           }
+        },
+        {
+          "name": "set_test_suite",
+          "description": "Rename a test suite (JSON Patch on name).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test suite UUID."
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_test_suite_test_results",
+          "description": "Test results of all test points in a test suite (latest attempts, with autotest and configuration).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test suite UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_test_suite_configurations",
+          "description": "Configurations of a test suite.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test suite UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_test_point_work_item",
+          "description": "The work item (test case) a test point represents.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test point UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_test_point_test_runs",
+          "description": "Test runs that include a test point.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test point UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
         }
       ]
     },
@@ -3832,6 +4095,59 @@
               },
               "projectName": {
                 "type": "string"
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "search_configurations",
+          "description": "Search configurations by name substring across projects (default: current project).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string"
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "isDeleted": {
+                "type": "boolean"
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
               }
             }
           },

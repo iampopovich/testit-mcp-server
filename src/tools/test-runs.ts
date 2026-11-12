@@ -139,6 +139,49 @@ export function createTestRunTools(
       },
     },
     {
+      name: "create_test_run_from_test_points",
+      description:
+        "Create a test run inside a test plan from explicit selectors: for each configuration, the work items " +
+        "whose test points to include. Like create_test_run_from_work_items, only AUTOMATED test points are accepted.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          projectId: { type: "string", description: "Project UUID (defaults to TESTIT_PROJECT_ID)." },
+          projectName: { type: "string" },
+          testPlanId: { type: "string" },
+          testPointSelectors: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                configurationId: { type: "string" },
+                workItemIds: { type: "array", items: { type: "string" } },
+              },
+              required: ["configurationId", "workItemIds"],
+            },
+          },
+          name: { type: "string" },
+          description: { type: "string" },
+          tags: { type: "array", items: { type: "string" } },
+        },
+        required: ["testPlanId", "testPointSelectors"],
+      },
+    },
+    {
+      name: "rerun_test_run_results",
+      description:
+        "Re-run autotest results of a run: each selected result gets a new pending attempt and the run goes back " +
+        "to InProgress. Submit new results via submit_test_run_results; attempts are listed by get_test_result_reruns.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Test run UUID." },
+          testResultIds: { type: "array", items: { type: "string" }, description: "Non-empty." },
+        },
+        required: ["id", "testResultIds"],
+      },
+    },
+    {
       name: "create_test_run_from_work_items",
       description:
         "Create a test run inside a test plan for the given work items x configurations (the plan becomes " +
@@ -302,6 +345,46 @@ export function createTestRunTools(
         if (value !== undefined) body[key] = value;
       }
       return api.createTestRunByAutoTests(client, body);
+    },
+    create_test_run_from_test_points: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const selectors = args.testPointSelectors;
+      const valid =
+        Array.isArray(selectors) &&
+        selectors.length > 0 &&
+        selectors.every(
+          (s) =>
+            s &&
+            typeof s === "object" &&
+            typeof (s as Record<string, unknown>).configurationId === "string" &&
+            Array.isArray((s as Record<string, unknown>).workItemIds) &&
+            ((s as Record<string, unknown>).workItemIds as unknown[]).length > 0,
+        );
+      if (!valid) {
+        throw new Error('"testPointSelectors" must be a non-empty array of {configurationId, workItemIds[]}.');
+      }
+      const body: Record<string, unknown> = {
+        projectId: await resolveProjectId(args, client),
+        testPlanId: getRequiredString(args, "testPlanId"),
+        testPointSelectors: selectors,
+      };
+      const optional = {
+        name: getOptionalString(args, "name"),
+        description: getOptionalString(args, "description"),
+        tags: getOptionalStringArray(args, "tags"),
+      };
+      for (const [key, value] of Object.entries(optional)) {
+        if (value !== undefined) body[key] = value;
+      }
+      return api.createTestRunByConfigurations(client, body);
+    },
+    rerun_test_run_results: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const ids = getOptionalStringArray(args, "testResultIds");
+      if (!ids || ids.length === 0) {
+        throw new Error('"testResultIds" must be a non-empty array (an empty selection would rerun the whole run).');
+      }
+      return api.rerunTestRunResults(client, getRequiredString(args, "id"), ids);
     },
     create_test_run_from_work_items: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

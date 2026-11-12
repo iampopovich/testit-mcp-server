@@ -27,6 +27,7 @@ const VERB_ANNOTATIONS: Record<string, ToolAnnotations> = {
   assign: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
   unassign: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
   reset: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
+  rerun: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
   set: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
   update: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
   delete: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },

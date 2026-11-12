@@ -73,3 +73,11 @@ export function deleteTestResultAttachment(
 ): Promise<unknown> {
   return client.delete(`/api/v2/testResults/${id}/attachments/${attachmentId}`);
 }
+
+export function getTestResultReruns(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.get(`/api/v2/testResults/${id}/reruns`);
+}
+
+export function getTestResultsStatistics(client: TestITApiClient, filter: Record<string, unknown>): Promise<unknown> {
+  return client.post("/api/v2/testResults/statistics/filter", filter);
+}

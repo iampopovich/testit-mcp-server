@@ -85,3 +85,18 @@ export function createTestRunByAutoTests(
 ): Promise<unknown> {
   return client.post("/api/v2/testRuns/byAutoTests", body);
 }
+
+/** Create a run inside a test plan from explicit (configuration, work items) selectors. */
+export function createTestRunByConfigurations(
+  client: TestITApiClient,
+  body: Record<string, unknown>,
+): Promise<unknown> {
+  return client.post("/api/v2/testRuns/byConfigurations", body);
+}
+
+/** Re-run the given autotest results: creates a new pending attempt per result, run -> InProgress. */
+export function rerunTestRunResults(client: TestITApiClient, id: string, testResultIds: string[]): Promise<unknown> {
+  return client.post(`/api/v2/testRuns/${id}/reruns`, {
+    extractionModel: { testResultIds: { include: testResultIds } },
+  });
+}

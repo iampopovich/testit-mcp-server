@@ -37,6 +37,7 @@ const EXTRA_ARGS: Record<string, Record<string, unknown>> = {
   set_autotests_flaky: { value: true },
   set_project: { name: "x" },
   set_autotest: { name: "x" },
+  create_test_run_from_test_points: { testPointSelectors: [{ configurationId: "c", workItemIds: ["w"] }] },
 };
 
 /** Canned responses for tools that read before they write ("METHOD path" -> body). */

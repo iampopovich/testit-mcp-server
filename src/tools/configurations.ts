@@ -8,6 +8,8 @@ import {
   getOptionalString,
   getRequiredId,
   getRequiredString,
+  PAGINATION_PROPERTIES,
+  pickPagination,
   resolveProjectId,
 } from "./utils.js";
 
@@ -37,6 +39,20 @@ export function createConfigurationTools(
         properties: {
           projectId: { type: "string" },
           projectName: { type: "string" },
+        },
+      },
+    },
+    {
+      name: "search_configurations",
+      description: "Search configurations by name substring across projects (default: current project).",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          projectId: { type: "string" },
+          projectName: { type: "string" },
+          name: { type: "string" },
+          isDeleted: { type: "boolean" },
+          ...PAGINATION_PROPERTIES,
         },
       },
     },
@@ -116,6 +132,15 @@ export function createConfigurationTools(
       const args = asObject(rawArgs);
       const projectId = await resolveProjectId(args, client);
       return api.listConfigurations(client, projectId, {});
+    },
+    search_configurations: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const filter: Record<string, unknown> = { projectIds: [await resolveProjectId(args, client)] };
+      const name = getOptionalString(args, "name");
+      const isDeleted = getOptionalBoolean(args, "isDeleted");
+      if (name !== undefined) filter.name = name;
+      if (isDeleted !== undefined) filter.isDeleted = isDeleted;
+      return api.searchConfigurations(client, filter, pickPagination(args));
     },
     get_configuration: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

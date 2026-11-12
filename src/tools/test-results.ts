@@ -160,6 +160,35 @@ export function createTestResultTools(
       },
     },
     {
+      name: "get_test_result_reruns",
+      description:
+        "All attempts of a test result (original + reruns) with runNumber, outcome and status. The original result " +
+        "keeps its status; later attempts are separate results.",
+      inputSchema: {
+        type: "object" as const,
+        properties: { id: { type: "string", description: "Test result UUID." } },
+        required: ["id"],
+      },
+    },
+    {
+      name: "get_test_results_statistics",
+      description:
+        "Counts of test results by status (passed/failed/skipped/blocked/...) and failure category for a filter, " +
+        "e.g. one or more test runs.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          testRunIds: { type: "array", items: { type: "string" } },
+          configurationIds: { type: "array", items: { type: "string" } },
+          statusCodes: { type: "array", items: { type: "string" } },
+          name: { type: "string" },
+          namespace: { type: "string" },
+          className: { type: "string" },
+          filter: { type: "object", additionalProperties: true, description: "Raw TestResultsFilterApiModel." },
+        },
+      },
+    },
+    {
       name: "list_test_result_attachments",
       description: "List attachments of a test result (id, name, type, size).",
       inputSchema: {
@@ -259,6 +288,24 @@ export function createTestResultTools(
         throw new Error("\"results\" must be a non-empty array.");
       }
       return api.submitTestRunResults(client, id, args.results as Array<Record<string, unknown>>);
+    },
+    get_test_result_reruns: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.getTestResultReruns(client, getRequiredString(args, "id"));
+    },
+    get_test_results_statistics: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.getTestResultsStatistics(client, {
+        ...(getOptionalObjectPayload(args, "filter") ?? {}),
+        ...compact({
+          testRunIds: getOptionalStringArray(args, "testRunIds"),
+          configurationIds: getOptionalStringArray(args, "configurationIds"),
+          statusCodes: getOptionalStringArray(args, "statusCodes"),
+          name: getOptionalString(args, "name"),
+          namespace: getOptionalString(args, "namespace"),
+          className: getOptionalString(args, "className"),
+        }),
+      });
     },
     list_test_result_attachments: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

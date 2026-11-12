@@ -48,3 +48,11 @@ export function restoreConfiguration(client: TestITApiClient, id: string): Promi
 export function purgeConfiguration(client: TestITApiClient, id: string): Promise<unknown> {
   return client.post(`/api/v2/configurations/${id}/purge`);
 }
+
+export function searchConfigurations(
+  client: TestITApiClient,
+  filter: Record<string, unknown>,
+  query: QueryParams,
+): Promise<unknown> {
+  return client.post("/api/v2/configurations/search", filter, query);
+}

@@ -43,3 +43,27 @@ export function searchTestPoints(
 ): Promise<unknown> {
   return client.post("/api/v2/testPoints/search", filter, query);
 }
+
+export function patchTestSuite(
+  client: TestITApiClient,
+  id: string,
+  operations: Array<Record<string, unknown>>,
+): Promise<unknown> {
+  return client.patch(`/api/v2/testSuites/${id}`, operations);
+}
+
+export function listTestSuiteTestResults(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.get(`/api/v2/testSuites/${id}/testResults`);
+}
+
+export function listTestSuiteConfigurations(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.get(`/api/v2/testSuites/${id}/configurations`);
+}
+
+export function getTestPointWorkItem(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.get(`/api/v2/testPoints/${id}/workItem`);
+}
+
+export function listTestPointTestRuns(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.get(`/api/v2/testPoints/${id}/testRuns`);
+}

@@ -115,6 +115,38 @@ export function createTestSuiteTools(client: TestITApiClient): ToolBundle {
       description: "Delete a test suite with its nested suites and test points.",
       inputSchema: idOnly("Test suite UUID."),
     },
+    {
+      name: "set_test_suite",
+      description: "Rename a test suite (JSON Patch on name).",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Test suite UUID." },
+          name: { type: "string" },
+        },
+        required: ["id", "name"],
+      },
+    },
+    {
+      name: "list_test_suite_test_results",
+      description: "Test results of all test points in a test suite (latest attempts, with autotest and configuration).",
+      inputSchema: idOnly("Test suite UUID."),
+    },
+    {
+      name: "list_test_suite_configurations",
+      description: "Configurations of a test suite.",
+      inputSchema: idOnly("Test suite UUID."),
+    },
+    {
+      name: "get_test_point_work_item",
+      description: "The work item (test case) a test point represents.",
+      inputSchema: idOnly("Test point UUID."),
+    },
+    {
+      name: "list_test_point_test_runs",
+      description: "Test runs that include a test point.",
+      inputSchema: idOnly("Test point UUID."),
+    },
   ];
 
   const handlers = {
@@ -175,6 +207,28 @@ export function createTestSuiteTools(client: TestITApiClient): ToolBundle {
     delete_test_suite: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
       return api.deleteTestSuite(client, getRequiredString(args, "id"));
+    },
+    set_test_suite: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.patchTestSuite(client, getRequiredString(args, "id"), [
+        { op: "replace", path: "/name", value: getRequiredString(args, "name") },
+      ]);
+    },
+    list_test_suite_test_results: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.listTestSuiteTestResults(client, getRequiredString(args, "id"));
+    },
+    list_test_suite_configurations: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.listTestSuiteConfigurations(client, getRequiredString(args, "id"));
+    },
+    get_test_point_work_item: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.getTestPointWorkItem(client, getRequiredString(args, "id"));
+    },
+    list_test_point_test_runs: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.listTestPointTestRuns(client, getRequiredString(args, "id"));
     },
   };
 
