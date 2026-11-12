@@ -54,3 +54,32 @@ describe("test result tools", () => {
     await expect(call("submit_test_run_results", { id: "r1", results: [] })).rejects.toThrow("non-empty array");
   });
 });
+
+describe("test result attachment tools", () => {
+  it("upload wraps the bare id; list/get/delete hit attachment endpoints", async () => {
+    const { client, call } = setup();
+    client.postMultipart.mockResolvedValueOnce("a1");
+    expect(
+      await call("upload_test_result_attachment", {
+        id: "tr",
+        filename: "log.txt",
+        contentType: "text/plain",
+        contentBase64: Buffer.from("hi").toString("base64"),
+      }),
+    ).toEqual({ id: "a1" });
+    expect(client.postMultipart.mock.calls[0][0]).toBe("/api/v2/testResults/tr/attachments");
+    const form = client.postMultipart.mock.calls[0][1] as FormData;
+    expect((form.get("file") as File).name).toBe("log.txt");
+
+    await call("list_test_result_attachments", { id: "tr" });
+    await call("get_test_result_attachment", { id: "tr", attachmentId: "a1" });
+    await call("delete_test_result_attachment", { id: "tr", attachmentId: "a1" });
+    expect(client.getRaw.mock.calls[0][0]).toBe("/api/v2/testResults/tr/attachments/a1");
+    expect(client.calls.map((c) => `${c.method} ${c.path}`)).toEqual(
+      expect.arrayContaining([
+        "GET /api/v2/testResults/tr/attachments",
+        "DELETE /api/v2/testResults/tr/attachments/a1",
+      ]),
+    );
+  });
+});

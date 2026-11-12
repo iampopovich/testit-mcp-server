@@ -159,6 +159,53 @@ export function createTestResultTools(
         required: ["id", "results"],
       },
     },
+    {
+      name: "list_test_result_attachments",
+      description: "List attachments of a test result (id, name, type, size).",
+      inputSchema: {
+        type: "object" as const,
+        properties: { id: { type: "string", description: "Test result UUID." } },
+        required: ["id"],
+      },
+    },
+    {
+      name: "upload_test_result_attachment",
+      description: "Attach a file (screenshot, log) to a test result. Returns the new attachment id.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Test result UUID." },
+          filename: { type: "string", description: "File name including extension." },
+          contentType: { type: "string", description: "MIME type, e.g. image/png." },
+          contentBase64: { type: "string", description: "File content encoded as base64." },
+        },
+        required: ["id", "filename", "contentType", "contentBase64"],
+      },
+    },
+    {
+      name: "get_test_result_attachment",
+      description: "Download a test result attachment; content is returned base64-encoded.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Test result UUID." },
+          attachmentId: { type: "string" },
+        },
+        required: ["id", "attachmentId"],
+      },
+    },
+    {
+      name: "delete_test_result_attachment",
+      description: "Delete an attachment from a test result.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Test result UUID." },
+          attachmentId: { type: "string" },
+        },
+        required: ["id", "attachmentId"],
+      },
+    },
   ];
 
   const handlers = {
@@ -212,6 +259,37 @@ export function createTestResultTools(
         throw new Error("\"results\" must be a non-empty array.");
       }
       return api.submitTestRunResults(client, id, args.results as Array<Record<string, unknown>>);
+    },
+    list_test_result_attachments: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.listTestResultAttachments(client, getRequiredString(args, "id"));
+    },
+    upload_test_result_attachment: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const attachmentId = await api.uploadTestResultAttachment(
+        client,
+        getRequiredString(args, "id"),
+        getRequiredString(args, "filename"),
+        getRequiredString(args, "contentType"),
+        getRequiredString(args, "contentBase64"),
+      );
+      return { id: attachmentId };
+    },
+    get_test_result_attachment: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.downloadTestResultAttachment(
+        client,
+        getRequiredString(args, "id"),
+        getRequiredString(args, "attachmentId"),
+      );
+    },
+    delete_test_result_attachment: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.deleteTestResultAttachment(
+        client,
+        getRequiredString(args, "id"),
+        getRequiredString(args, "attachmentId"),
+      );
     },
   };
 

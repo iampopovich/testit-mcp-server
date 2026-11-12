@@ -39,3 +39,37 @@ export function submitTestRunResults(
 ): Promise<unknown> {
   return client.post(`/api/v2/testRuns/${testRunId}/testResults`, results);
 }
+
+export function listTestResultAttachments(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.get(`/api/v2/testResults/${id}/attachments`);
+}
+
+/** Multipart upload; TestIT responds with the new attachment id as a bare JSON string. */
+export function uploadTestResultAttachment(
+  client: TestITApiClient,
+  id: string,
+  filename: string,
+  contentType: string,
+  contentBase64: string,
+): Promise<unknown> {
+  const blob = new Blob([Buffer.from(contentBase64, "base64")], { type: contentType });
+  const formData = new FormData();
+  formData.append("file", blob, filename);
+  return client.postMultipart(`/api/v2/testResults/${id}/attachments`, formData);
+}
+
+export function downloadTestResultAttachment(
+  client: TestITApiClient,
+  id: string,
+  attachmentId: string,
+): Promise<{ contentType: string; content: string; encoding: string }> {
+  return client.getRaw(`/api/v2/testResults/${id}/attachments/${attachmentId}`);
+}
+
+export function deleteTestResultAttachment(
+  client: TestITApiClient,
+  id: string,
+  attachmentId: string,
+): Promise<unknown> {
+  return client.delete(`/api/v2/testResults/${id}/attachments/${attachmentId}`);
+}

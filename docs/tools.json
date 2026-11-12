@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T08:40:33.038Z",
-  "totalTools": 87,
+  "generatedAt": "2026-11-12T14:14:22.096Z",
+  "totalTools": 94,
   "categories": [
     {
       "name": "Projects",
@@ -1473,6 +1473,170 @@
           }
         },
         {
+          "name": "search_test_runs",
+          "description": "Search test runs (across projects if no project given). Typed fields are merged over an optional raw \"filter\" (TestRunFilterApiModel). projectIds defaults to the current project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string"
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string",
+                "description": "Substring of the run name."
+              },
+              "states": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "NotStarted",
+                    "InProgress",
+                    "Stopped",
+                    "Completed"
+                  ]
+                }
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "isDeleted": {
+                "type": "boolean"
+              },
+              "filter": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_test_run",
+          "description": "Partially update a test run (JSON Patch): only name, description, tags you pass change.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test run UUID."
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Replaces all tags."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "create_test_run_from_autotests",
+          "description": "Create a test run (not bound to a test plan) pre-filled with one result per autotest x configuration. Fill results via submit_test_run_results by autoTestExternalId.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "autoTestExternalIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "configurationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "launchSource": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "autoTestExternalIds",
+              "configurationIds"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
           "name": "create_test_run_from_work_items",
           "description": "Create a test run inside a test plan for the given work items x configurations (the plan becomes InProgress). Only AUTOMATED work items are accepted (linked to an autotest, see link_autotest_work_item); TestIT rejects manual ones. Results are pre-created and filled via submit_test_run_results; the run completes when all results are in.",
           "inputSchema": {
@@ -1910,6 +2074,113 @@
             "readOnlyHint": false,
             "destructiveHint": false,
             "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_test_result_attachments",
+          "description": "List attachments of a test result (id, name, type, size).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test result UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "upload_test_result_attachment",
+          "description": "Attach a file (screenshot, log) to a test result. Returns the new attachment id.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test result UUID."
+              },
+              "filename": {
+                "type": "string",
+                "description": "File name including extension."
+              },
+              "contentType": {
+                "type": "string",
+                "description": "MIME type, e.g. image/png."
+              },
+              "contentBase64": {
+                "type": "string",
+                "description": "File content encoded as base64."
+              }
+            },
+            "required": [
+              "id",
+              "filename",
+              "contentType",
+              "contentBase64"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_test_result_attachment",
+          "description": "Download a test result attachment; content is returned base64-encoded.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test result UUID."
+              },
+              "attachmentId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "attachmentId"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_test_result_attachment",
+          "description": "Delete an attachment from a test result.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test result UUID."
+              },
+              "attachmentId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "attachmentId"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
             "openWorldHint": true
           }
         }

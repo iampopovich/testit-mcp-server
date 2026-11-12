@@ -52,7 +52,12 @@ describe("tool registry", () => {
       /Unknown toolset\(s\) in TESTIT_TOOLSETS: nope\. Valid: projects, work-items/,
     );
     const roRuns = buildToolRegistry(createRecordingClient() as never, { toolsets: ["test-runs"], readOnly: true });
-    expect(roRuns.tools.map((t) => t.name).sort()).toEqual(["get_test_run", "get_test_run_results", "list_test_runs"]);
+    expect(roRuns.tools.map((t) => t.name).sort()).toEqual([
+      "get_test_run",
+      "get_test_run_results",
+      "list_test_runs",
+      "search_test_runs",
+    ]);
   });
 
   it("parseListEnv splits on commas and spaces", () => {

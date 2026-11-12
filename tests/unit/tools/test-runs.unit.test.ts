@@ -48,3 +48,45 @@ describe("test run tools", () => {
     expect(client.calls[0]).toMatchObject({ method: "POST", path: "/api/v2/testRuns/r1/complete" });
   });
 });
+
+describe("test run search, patch and autotest runs", () => {
+  it("search_test_runs scopes to the project and merges typed fields", async () => {
+    const { client, call } = setup();
+    await call("search_test_runs", { projectId: "p1", states: ["Completed"], name: "nightly", take: 5 });
+    expect(client.calls[0]).toMatchObject({
+      method: "POST",
+      path: "/api/v2/testRuns/search",
+      body: { projectIds: ["p1"], name: "nightly", states: ["Completed"] },
+    });
+    expect(definedQuery(client.calls[0].query)).toEqual({ Take: 5 });
+  });
+
+  it("set_test_run sends replace ops and rejects empty updates", async () => {
+    const { client, call } = setup();
+    await call("set_test_run", { id: "r1", tags: ["smoke"] });
+    expect(client.calls[0]).toMatchObject({
+      method: "PATCH",
+      path: "/api/v2/testRuns/r1",
+      body: [{ op: "replace", path: "/tags", value: ["smoke"] }],
+    });
+    await expect(call("set_test_run", { id: "r1" })).rejects.toThrow("Nothing to update");
+  });
+
+  it("create_test_run_from_autotests builds the byAutoTests body", async () => {
+    const { client, call } = setup();
+    await call("create_test_run_from_autotests", {
+      projectId: "p1",
+      autoTestExternalIds: ["e1"],
+      configurationIds: ["c1"],
+      name: "CI",
+    });
+    expect(client.calls[0]).toMatchObject({
+      method: "POST",
+      path: "/api/v2/testRuns/byAutoTests",
+      body: { projectId: "p1", autoTestExternalIds: ["e1"], configurationIds: ["c1"], name: "CI" },
+    });
+    await expect(
+      call("create_test_run_from_autotests", { projectId: "p1", autoTestExternalIds: ["e1"], configurationIds: [] }),
+    ).rejects.toThrow('"configurationIds" must be a non-empty array');
+  });
+});

@@ -61,3 +61,27 @@ export function getTestRunTestResults(
 ): Promise<unknown> {
   return client.get(`/api/v2/testRuns/${id}/testPoints/results`, query);
 }
+
+export function searchTestRuns(
+  client: TestITApiClient,
+  filter: Record<string, unknown>,
+  query: QueryParams,
+): Promise<unknown> {
+  return client.post("/api/v2/testRuns/search", filter, query);
+}
+
+export function patchTestRun(
+  client: TestITApiClient,
+  id: string,
+  operations: Array<Record<string, unknown>>,
+): Promise<unknown> {
+  return client.patch(`/api/v2/testRuns/${id}`, operations);
+}
+
+/** Create a run (outside test plans) pre-filled with results for the given autotests. */
+export function createTestRunByAutoTests(
+  client: TestITApiClient,
+  body: Record<string, unknown>,
+): Promise<unknown> {
+  return client.post("/api/v2/testRuns/byAutoTests", body);
+}

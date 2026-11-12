@@ -8,6 +8,7 @@ import {
   getOptionalString,
   getOptionalStringArray,
   getRequiredId,
+  getRequiredString,
   PAGINATION_PROPERTIES,
   pickPagination,
   resolveProjectId,
@@ -79,6 +80,62 @@ export function createTestRunTools(
         type: "object" as const,
         properties: { id: { type: "string" } },
         required: ["id"],
+      },
+    },
+    {
+      name: "search_test_runs",
+      description:
+        "Search test runs (across projects if no project given). Typed fields are merged over an optional " +
+        "raw \"filter\" (TestRunFilterApiModel). projectIds defaults to the current project.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          projectId: { type: "string" },
+          projectName: { type: "string" },
+          name: { type: "string", description: "Substring of the run name." },
+          states: {
+            type: "array",
+            items: { type: "string", enum: ["NotStarted", "InProgress", "Stopped", "Completed"] },
+          },
+          tags: { type: "array", items: { type: "string" } },
+          isDeleted: { type: "boolean" },
+          filter: { type: "object", additionalProperties: true },
+          ...PAGINATION_PROPERTIES,
+        },
+      },
+    },
+    {
+      name: "set_test_run",
+      description: "Partially update a test run (JSON Patch): only name, description, tags you pass change.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Test run UUID." },
+          name: { type: "string" },
+          description: { type: "string" },
+          tags: { type: "array", items: { type: "string" }, description: "Replaces all tags." },
+        },
+        required: ["id"],
+      },
+    },
+    {
+      name: "create_test_run_from_autotests",
+      description:
+        "Create a test run (not bound to a test plan) pre-filled with one result per autotest x configuration. " +
+        "Fill results via submit_test_run_results by autoTestExternalId.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          projectId: { type: "string", description: "Project UUID (defaults to TESTIT_PROJECT_ID)." },
+          projectName: { type: "string" },
+          autoTestExternalIds: { type: "array", items: { type: "string" } },
+          configurationIds: { type: "array", items: { type: "string" } },
+          name: { type: "string" },
+          description: { type: "string" },
+          tags: { type: "array", items: { type: "string" } },
+          launchSource: { type: "string" },
+        },
+        required: ["autoTestExternalIds", "configurationIds"],
       },
     },
     {
@@ -188,6 +245,63 @@ export function createTestRunTools(
         body.projectId = await resolveProjectId(args, client);
       }
       return api.createTestRun(client, body);
+    },
+    search_test_runs: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const raw = getOptionalObjectPayload(args, "filter") ?? {};
+      const projectIds =
+        typeof args.projectId === "string" || typeof args.projectName === "string" || !raw.projectIds
+          ? [await resolveProjectId(args, client)]
+          : undefined;
+      const typed = Object.fromEntries(
+        Object.entries({
+          projectIds,
+          name: getOptionalString(args, "name"),
+          states: getOptionalStringArray(args, "states"),
+          tags: getOptionalStringArray(args, "tags"),
+          isDeleted: getOptionalBoolean(args, "isDeleted"),
+        }).filter(([, value]) => value !== undefined),
+      );
+      return api.searchTestRuns(client, { ...raw, ...typed }, pickPagination(args));
+    },
+    set_test_run: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const operations = Object.entries({
+        name: getOptionalString(args, "name"),
+        description: getOptionalString(args, "description"),
+        tags: getOptionalStringArray(args, "tags"),
+      })
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => ({ op: "replace", path: `/${key}`, value }));
+      if (operations.length === 0) {
+        throw new Error("Nothing to update: pass at least one of name, description, tags.");
+      }
+      return api.patchTestRun(client, getRequiredString(args, "id"), operations);
+    },
+    create_test_run_from_autotests: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const required = (key: string): string[] => {
+        const value = getOptionalStringArray(args, key);
+        if (!value || value.length === 0) {
+          throw new Error(`"${key}" must be a non-empty array of strings.`);
+        }
+        return value;
+      };
+      const body: Record<string, unknown> = {
+        projectId: await resolveProjectId(args, client),
+        autoTestExternalIds: required("autoTestExternalIds"),
+        configurationIds: required("configurationIds"),
+      };
+      const optional = {
+        name: getOptionalString(args, "name"),
+        description: getOptionalString(args, "description"),
+        tags: getOptionalStringArray(args, "tags"),
+        launchSource: getOptionalString(args, "launchSource"),
+      };
+      for (const [key, value] of Object.entries(optional)) {
+        if (value !== undefined) body[key] = value;
+      }
+      return api.createTestRunByAutoTests(client, body);
     },
     create_test_run_from_work_items: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
