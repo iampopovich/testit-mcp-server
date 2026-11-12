@@ -4,6 +4,9 @@ import type { ToolBundle } from "./types.js";
 import {
   asObject,
   buildWorkItemFilter,
+  getOptionalObjectPayload,
+  getOptionalString,
+  getOptionalStringArray,
   getRequiredString,
   getRequiredId,
   PAGINATION_PROPERTIES,
@@ -35,17 +38,23 @@ export function createWorkItemTools(
     },
     {
       name: "search_work_items",
-      description: "Search work items by TQL query.",
+      description:
+        "Search work items across projects. Typed filter fields are combined with an optional raw " +
+        "\"filter\" object (TestIT WorkItemFilterApiModel) for advanced fields.",
       inputSchema: {
         type: "object" as const,
         properties: {
-          query: {
+          projectIds: { type: "array", items: { type: "string" }, description: "Project UUIDs." },
+          nameOrId: { type: "string", description: "Work item name part or global ID." },
+          globalIds: { type: "array", items: { type: "number" }, description: "Global numeric IDs." },
+          ...WORK_ITEM_FILTER_PROPERTIES,
+          filter: {
             type: "object",
-            description: "Search filter object according to TestIT API.",
+            additionalProperties: true,
+            description: "Raw WorkItemFilterApiModel fields (e.g. createdDate, attributes, autoTestIds).",
           },
           ...PAGINATION_PROPERTIES,
         },
-        required: ["query"],
       },
     },
     {
@@ -147,8 +156,26 @@ export function createWorkItemTools(
     },
     search_work_items: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
-      const query = (args.query as Record<string, unknown>) || {};
-      return api.searchWorkItems(client, query, pickPagination(args));
+      // Backward compatibility: older clients passed the body as "query".
+      const legacy = getOptionalObjectPayload(args, "query") ?? {};
+      const legacyFilter =
+        legacy.filter && typeof legacy.filter === "object"
+          ? (legacy.filter as Record<string, unknown>)
+          : legacy;
+      const typed = Object.fromEntries(
+        Object.entries({
+          ...buildWorkItemFilter(args),
+          projectIds: getOptionalStringArray(args, "projectIds"),
+          nameOrId: getOptionalString(args, "nameOrId"),
+          globalIds: args.globalIds,
+        }).filter(([, value]) => value !== undefined),
+      );
+      const filter = {
+        ...legacyFilter,
+        ...(getOptionalObjectPayload(args, "filter") ?? {}),
+        ...typed,
+      };
+      return api.searchWorkItems(client, { filter }, pickPagination(args));
     },
     get_work_item: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

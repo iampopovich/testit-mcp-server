@@ -44,6 +44,37 @@ describe("work item listing tools", () => {
     expect(client.calls[0].body).toEqual({ filter: { name: "auth", types: ["SharedSteps"] } });
   });
 
+  it("search_work_items wraps typed fields into {filter} (raw body was silently ignored)", async () => {
+    const { client, call } = setup();
+    await call("search_work_items", {
+      projectIds: ["p1"],
+      nameOrId: "42",
+      types: ["CheckLists"],
+      filter: { createdDate: { from: "2026-01-01" } },
+      take: 3,
+    });
+    const [req] = client.calls;
+    expect(req.method).toBe("POST");
+    expect(req.path).toBe("/api/v2/workItems/search");
+    expect(req.body).toEqual({
+      filter: {
+        createdDate: { from: "2026-01-01" },
+        types: ["CheckLists"],
+        projectIds: ["p1"],
+        nameOrId: "42",
+      },
+    });
+    expect(definedQuery(req.query)).toEqual({ Take: 3 });
+  });
+
+  it("search_work_items accepts legacy query arg with or without filter wrapper", async () => {
+    const { client, call } = setup();
+    await call("search_work_items", { query: { name: "a" } });
+    await call("search_work_items", { query: { filter: { name: "b" } } });
+    expect(client.calls[0].body).toEqual({ filter: { name: "a" } });
+    expect(client.calls[1].body).toEqual({ filter: { name: "b" } });
+  });
+
   it("list_projects uses POST /projects/search with a filter", async () => {
     const { client, call } = setup();
     await call("list_projects", { name: "sigma", isDeleted: false, take: 5 });

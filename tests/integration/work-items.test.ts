@@ -63,6 +63,15 @@ describe.skipIf(!integrationEnabled)("integration: work items listing", () => {
     expect(steps.map((w) => w.id)).toEqual([sharedStep.id]);
   });
 
+  it("search_work_items finds items across projects by projectIds + name", async () => {
+    const found = await callTool<WorkItem[]>("search_work_items", {
+      projectIds: [getProjectId()],
+      name: prefix,
+      types: ["SharedSteps"],
+    });
+    expect(found.map((w) => w.id)).toEqual([sharedStep.id]);
+  });
+
   it("list_projects finds the project by name", async () => {
     const project = await callTool<{ name: string }>("get_project", { id: getProjectId() });
     const found = await callTool<Array<{ id: string }>>("list_projects", { name: project.name });

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T07:43:24.146Z",
+  "generatedAt": "2026-11-12T07:44:09.232Z",
   "totalTools": 40,
   "categories": [
     {
@@ -273,13 +273,93 @@
         },
         {
           "name": "search_work_items",
-          "description": "Search work items by TQL query.",
+          "description": "Search work items across projects. Typed filter fields are combined with an optional raw \"filter\" object (TestIT WorkItemFilterApiModel) for advanced fields.",
           "inputSchema": {
             "type": "object",
             "properties": {
-              "query": {
+              "projectIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Project UUIDs."
+              },
+              "nameOrId": {
+                "type": "string",
+                "description": "Work item name part or global ID."
+              },
+              "globalIds": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "description": "Global numeric IDs."
+              },
+              "name": {
+                "type": "string",
+                "description": "Filter by (part of) work item name."
+              },
+              "types": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "TestCases",
+                    "CheckLists",
+                    "SharedSteps"
+                  ]
+                },
+                "description": "Work item types."
+              },
+              "states": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "NeedsWork",
+                    "NotReady",
+                    "Ready"
+                  ]
+                }
+              },
+              "priorities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "Lowest",
+                    "Low",
+                    "Medium",
+                    "High",
+                    "Highest"
+                  ]
+                }
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names."
+              },
+              "sectionIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Section UUIDs."
+              },
+              "isAutomated": {
+                "type": "boolean"
+              },
+              "isDeleted": {
+                "type": "boolean",
+                "description": "Search archived (deleted) work items."
+              },
+              "filter": {
                 "type": "object",
-                "description": "Search filter object according to TestIT API."
+                "additionalProperties": true,
+                "description": "Raw WorkItemFilterApiModel fields (e.g. createdDate, attributes, autoTestIds)."
               },
               "skip": {
                 "type": "number",
@@ -309,10 +389,7 @@
                 "type": "string",
                 "description": "Value to search for in searchField."
               }
-            },
-            "required": [
-              "query"
-            ]
+            }
           }
         },
         {
