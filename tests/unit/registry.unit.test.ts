@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildToolRegistry, isTruthyEnv } from "../../src/server-bootstrap.js";
+import { buildToolRegistry, isTruthyEnv, parseListEnv } from "../../src/server-bootstrap.js";
 import { annotationsFor } from "../../src/tools/annotations.js";
 import { createRecordingClient, expectObjectSchemas, expectToolHandlerParity } from "./tool-test-helpers.js";
 
@@ -41,6 +41,24 @@ describe("tool registry", () => {
     expect(ro.tools.every((t) => t.annotations?.readOnlyHint)).toBe(true);
     expect([...ro.handlers.keys()].sort()).toEqual(ro.tools.map((t) => t.name).sort());
     expect(ro.handlers.has("delete_work_item")).toBe(false);
+  });
+
+  it("toolsets select bundles; unknown toolset names fail fast", () => {
+    const only = buildToolRegistry(createRecordingClient() as never, { toolsets: ["projects", "test-runs"] });
+    expect(only.tools.some((t) => t.name === "get_project")).toBe(true);
+    expect(only.tools.some((t) => t.name === "create_test_run")).toBe(true);
+    expect(only.tools.some((t) => t.name === "list_work_items")).toBe(false);
+    expect(() => buildToolRegistry(createRecordingClient() as never, { toolsets: ["nope"] })).toThrow(
+      /Unknown toolset\(s\) in TESTIT_TOOLSETS: nope\. Valid: projects, work-items/,
+    );
+    const roRuns = buildToolRegistry(createRecordingClient() as never, { toolsets: ["test-runs"], readOnly: true });
+    expect(roRuns.tools.map((t) => t.name).sort()).toEqual(["get_test_run", "get_test_run_results", "list_test_runs"]);
+  });
+
+  it("parseListEnv splits on commas and spaces", () => {
+    expect(parseListEnv(" projects, work-items  test-runs,")).toEqual(["projects", "work-items", "test-runs"]);
+    expect(parseListEnv("")).toBeUndefined();
+    expect(parseListEnv(undefined)).toBeUndefined();
   });
 
   it("isTruthyEnv parses common truthy values", () => {

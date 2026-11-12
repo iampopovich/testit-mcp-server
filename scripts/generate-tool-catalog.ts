@@ -2,11 +2,12 @@ import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { buildToolBundles } from "../src/server-bootstrap.js";
+import { buildAnnotatedBundles } from "../src/server-bootstrap.js";
 import type { McpToolDefinition } from "../src/tools/types.js";
 
 interface ToolCategory {
   name: string;
+  toolset: string;
   tools: McpToolDefinition[];
 }
 
@@ -26,8 +27,9 @@ function buildCatalog(): ToolCatalog {
     },
   );
 
-  const categories: ToolCategory[] = buildToolBundles(noopClient as never).map((bundle) => ({
+  const categories: ToolCategory[] = buildAnnotatedBundles(noopClient as never).map((bundle) => ({
     name: bundle.category,
+    toolset: bundle.toolset,
     tools: bundle.tools,
   }));
 

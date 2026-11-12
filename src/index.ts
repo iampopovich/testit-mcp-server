@@ -5,7 +5,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { TokenManager } from "./auth.js";
 import { TestITApiClient } from "./client.js";
-import { buildToolRegistry, isTruthyEnv, requiredEnv } from "./server-bootstrap.js";
+import { buildToolRegistry, isTruthyEnv, parseListEnv, requiredEnv } from "./server-bootstrap.js";
 
 function formatToolResult(result: unknown): string {
   if (result === undefined) {
@@ -34,6 +34,7 @@ async function main(): Promise<void> {
   const client = new TestITApiClient({ baseUrl, tokenManager, defaultProjectId });
   const { tools, handlers } = buildToolRegistry(client, {
     readOnly: isTruthyEnv(process.env.TESTIT_READ_ONLY),
+    toolsets: parseListEnv(process.env.TESTIT_TOOLSETS),
   });
 
   const server = new Server(

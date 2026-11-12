@@ -47,6 +47,14 @@ describe.skipIf(!integrationEnabled || !existsSync(serverPath))("integration: MC
     });
   });
 
+  it("TESTIT_TOOLSETS limits exposed tools", async () => {
+    await withServer({ TESTIT_TOOLSETS: "projects" }, async (client) => {
+      const { tools } = await client.listTools();
+      expect(tools.length).toBeGreaterThan(0);
+      expect(tools.every((t) => t.name.endsWith("_project") || t.name.endsWith("_projects"))).toBe(true);
+    });
+  });
+
   it("TESTIT_READ_ONLY hides mutating tools and rejects calls to them", async () => {
     await withServer({ TESTIT_READ_ONLY: "true" }, async (client) => {
       const { tools } = await client.listTools();
