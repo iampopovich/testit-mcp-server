@@ -26,6 +26,11 @@ const specAvailable = Boolean(specPath && existsSync(specPath));
  */
 const KNOWN_VIOLATIONS: Record<string, string> = {};
 
+/** Extra args for tools that need more than their required fields to make a call. */
+const EXTRA_ARGS: Record<string, Record<string, unknown>> = {
+  set_test_result: { comment: "x" },
+};
+
 function findTemplate(paths: SpecPaths, method: string, path: string): string | undefined {
   const candidates = Object.keys(paths).filter((template) => {
     if (!paths[template][method.toLowerCase()]) {
@@ -70,7 +75,7 @@ describe.skipIf(!specAvailable)("contract: tools vs TestIT OpenAPI spec", () => 
     it(tool.name, async () => {
       const client = createRecordingClient();
       const { handlers } = buildToolRegistry(client as never);
-      const args = sampleArgs(tool.inputSchema);
+      const args = { ...sampleArgs(tool.inputSchema), ...EXTRA_ARGS[tool.name] };
       // Exercise advertised paging params so unsupported ones get caught.
       const props = tool.inputSchema.properties ?? {};
       if ("take" in props) args.take = 5;

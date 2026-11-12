@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T07:47:25.143Z",
-  "totalTools": 41,
+  "generatedAt": "2026-11-12T07:48:35.601Z",
+  "totalTools": 43,
   "categories": [
     {
       "name": "Projects",
@@ -925,12 +925,47 @@
         },
         {
           "name": "search_test_results",
-          "description": "Search test results.",
+          "description": "Search test results. Typed fields are merged with an optional raw \"query\" (TestResultsFilterApiModel) for advanced fields.",
           "inputSchema": {
             "type": "object",
             "properties": {
+              "testRunIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "configurationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "outcomes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "InProgress",
+                    "Passed",
+                    "Failed",
+                    "Skipped",
+                    "Blocked"
+                  ]
+                }
+              },
+              "statusCodes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "name": {
+                "type": "string"
+              },
               "query": {
-                "type": "object"
+                "type": "object",
+                "additionalProperties": true
               },
               "skip": {
                 "type": "number",
@@ -960,15 +995,12 @@
                 "type": "string",
                 "description": "Value to search for in searchField."
               }
-            },
-            "required": [
-              "query"
-            ]
+            }
           }
         },
         {
-          "name": "update_test_result",
-          "description": "Update an existing test result by ID (PUT). In TestIT, test results are pre-created per test point when a test run starts — use this to set outcome, comment, and other fields.",
+          "name": "set_test_result",
+          "description": "Change selected fields of a test result (JSON Patch) without touching the others. To change the result status use statusCode (patching outcome is ignored by TestIT). Raw RFC 6902 operations can be added via \"operations\".",
           "inputSchema": {
             "type": "object",
             "properties": {
@@ -976,14 +1008,147 @@
                 "type": "string",
                 "description": "Test result UUID."
               },
+              "statusCode": {
+                "type": "string",
+                "description": "Status code, e.g. PASSED, FAILED, BLOCKED, SKIPPED (see test statuses)."
+              },
+              "comment": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string",
+                "description": "Failure/info message."
+              },
+              "trace": {
+                "type": "string",
+                "description": "Stack trace."
+              },
+              "durationInMs": {
+                "type": "number"
+              },
+              "operations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "description": "Extra JSON Patch operations [{op, path, value}]."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "update_test_result",
+          "description": "Replace a test result (PUT). WARNING: this is a full replacement — fields not sent (comment, message, links, step results...) are cleared. Prefer set_test_result for partial changes.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test result UUID."
+              },
+              "outcome": {
+                "type": "string",
+                "enum": [
+                  "InProgress",
+                  "Passed",
+                  "Failed",
+                  "Skipped",
+                  "Blocked"
+                ]
+              },
+              "statusCode": {
+                "type": "string"
+              },
+              "comment": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "trace": {
+                "type": "string"
+              },
+              "durationInMs": {
+                "type": "number"
+              },
               "payload": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": true,
+                "description": "Raw TestResultUpdateV2Request fields; typed args take precedence."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "submit_test_run_results",
+          "description": "Send autotest results into a test run (POST /testRuns/{id}/testResults). Each result needs an existing autotest externalId and a configurationId. Returns created test result IDs.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test run UUID."
+              },
+              "results": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "autoTestExternalId": {
+                      "type": "string"
+                    },
+                    "configurationId": {
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "type": "string",
+                      "description": "e.g. Passed, Failed, Skipped, Blocked."
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "InProgress",
+                        "Passed",
+                        "Failed",
+                        "Skipped",
+                        "Blocked"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "traces": {
+                      "type": "string"
+                    },
+                    "duration": {
+                      "type": "number",
+                      "description": "Duration in ms."
+                    },
+                    "startedOn": {
+                      "type": "string"
+                    },
+                    "completedOn": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "autoTestExternalId",
+                    "configurationId"
+                  ],
+                  "additionalProperties": true
+                }
               }
             },
             "required": [
               "id",
-              "payload"
+              "results"
             ]
           }
         }

@@ -22,3 +22,20 @@ export function updateTestResult(
 ): Promise<unknown> {
   return client.put(`/api/v2/testResults/${id}`, payload);
 }
+
+/** RFC 6902 JSON Patch of a single test result. */
+export function patchTestResult(
+  client: TestITApiClient,
+  id: string,
+  operations: Array<Record<string, unknown>>,
+): Promise<unknown> {
+  return client.patch(`/api/v2/testResults/${id}`, operations);
+}
+
+export function submitTestRunResults(
+  client: TestITApiClient,
+  testRunId: string,
+  results: Array<Record<string, unknown>>,
+): Promise<unknown> {
+  return client.post(`/api/v2/testRuns/${testRunId}/testResults`, results);
+}
