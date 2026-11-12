@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T07:45:16.244Z",
-  "totalTools": 40,
+  "generatedAt": "2026-11-12T07:47:25.143Z",
+  "totalTools": 41,
   "categories": [
     {
       "name": "Projects",
@@ -714,6 +714,34 @@
               "projectName": {
                 "type": "string"
               },
+              "notStarted": {
+                "type": "boolean",
+                "description": "Include NotStarted runs."
+              },
+              "inProgress": {
+                "type": "boolean",
+                "description": "Include InProgress runs."
+              },
+              "stopped": {
+                "type": "boolean",
+                "description": "Include Stopped runs."
+              },
+              "completed": {
+                "type": "boolean",
+                "description": "Include Completed runs."
+              },
+              "testPlanId": {
+                "type": "string",
+                "description": "Only runs of this test plan."
+              },
+              "createdDateFrom": {
+                "type": "string",
+                "description": "ISO date-time."
+              },
+              "createdDateTo": {
+                "type": "string",
+                "description": "ISO date-time."
+              },
               "skip": {
                 "type": "number",
                 "description": "Number of items to skip (offset)."
@@ -762,18 +790,39 @@
         },
         {
           "name": "create_test_run",
-          "description": "Create a new test run.",
+          "description": "Create an empty test run in a project (state NotStarted). Extra CreateEmptyTestRunApiModel fields (attachments, links) can be passed in \"payload\".",
           "inputSchema": {
             "type": "object",
             "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "launchSource": {
+                "type": "string",
+                "description": "Free-form launch source, e.g. CI job URL."
+              },
               "payload": {
                 "type": "object",
                 "additionalProperties": true
               }
-            },
-            "required": [
-              "payload"
-            ]
+            }
           }
         },
         {
@@ -799,6 +848,22 @@
             "properties": {
               "id": {
                 "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "complete_test_run",
+          "description": "Complete a test run (InProgress/Stopped -> Completed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test run UUID."
               }
             },
             "required": [

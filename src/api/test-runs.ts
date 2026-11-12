@@ -30,6 +30,10 @@ export function stopTestRun(client: TestITApiClient, id: string): Promise<unknow
   return client.post(`/api/v2/testRuns/${id}/stop`);
 }
 
+export function completeTestRun(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.post(`/api/v2/testRuns/${id}/complete`);
+}
+
 export function deleteTestRun(client: TestITApiClient, id: string): Promise<unknown> {
   return client.delete(`/api/v2/testRuns/${id}`);
 }

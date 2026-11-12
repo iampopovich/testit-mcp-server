@@ -3,6 +3,10 @@ import * as api from "../api/test-runs.js";
 import type { ToolBundle } from "./types.js";
 import {
   asObject,
+  getOptionalBoolean,
+  getOptionalObjectPayload,
+  getOptionalString,
+  getOptionalStringArray,
   getRequiredId,
   PAGINATION_PROPERTIES,
   pickPagination,
@@ -21,6 +25,13 @@ export function createTestRunTools(
         properties: {
           projectId: { type: "string" },
           projectName: { type: "string" },
+          notStarted: { type: "boolean", description: "Include NotStarted runs." },
+          inProgress: { type: "boolean", description: "Include InProgress runs." },
+          stopped: { type: "boolean", description: "Include Stopped runs." },
+          completed: { type: "boolean", description: "Include Completed runs." },
+          testPlanId: { type: "string", description: "Only runs of this test plan." },
+          createdDateFrom: { type: "string", description: "ISO date-time." },
+          createdDateTo: { type: "string", description: "ISO date-time." },
           ...PAGINATION_PROPERTIES,
         },
       },
@@ -36,13 +47,20 @@ export function createTestRunTools(
     },
     {
       name: "create_test_run",
-      description: "Create a new test run.",
+      description:
+        "Create an empty test run in a project (state NotStarted). Extra CreateEmptyTestRunApiModel " +
+        "fields (attachments, links) can be passed in \"payload\".",
       inputSchema: {
         type: "object" as const,
         properties: {
+          projectId: { type: "string", description: "Project UUID (defaults to TESTIT_PROJECT_ID)." },
+          projectName: { type: "string", description: "Project name (alternative to projectId)." },
+          name: { type: "string" },
+          description: { type: "string" },
+          tags: { type: "array", items: { type: "string" } },
+          launchSource: { type: "string", description: "Free-form launch source, e.g. CI job URL." },
           payload: { type: "object", additionalProperties: true },
         },
-        required: ["payload"],
       },
     },
     {
@@ -60,6 +78,15 @@ export function createTestRunTools(
       inputSchema: {
         type: "object" as const,
         properties: { id: { type: "string" } },
+        required: ["id"],
+      },
+    },
+    {
+      name: "complete_test_run",
+      description: "Complete a test run (InProgress/Stopped -> Completed).",
+      inputSchema: {
+        type: "object" as const,
+        properties: { id: { type: "string", description: "Test run UUID." } },
         required: ["id"],
       },
     },
@@ -89,7 +116,16 @@ export function createTestRunTools(
     list_test_runs: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
       const projectId = await resolveProjectId(args, client);
-      return api.listTestRuns(client, projectId, pickPagination(args));
+      return api.listTestRuns(client, projectId, {
+        notStarted: getOptionalBoolean(args, "notStarted"),
+        inProgress: getOptionalBoolean(args, "inProgress"),
+        stopped: getOptionalBoolean(args, "stopped"),
+        completed: getOptionalBoolean(args, "completed"),
+        testPlanId: getOptionalString(args, "testPlanId"),
+        createdDateFrom: getOptionalString(args, "createdDateFrom"),
+        createdDateTo: getOptionalString(args, "createdDateTo"),
+        ...pickPagination(args),
+      });
     },
     get_test_run: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
@@ -97,11 +133,24 @@ export function createTestRunTools(
     },
     create_test_run: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
-      const payload = (args.payload as Record<string, unknown>) || {};
-      if (!payload.projectId && client.defaultProjectId) {
-        payload.projectId = client.defaultProjectId;
+      const body: Record<string, unknown> = { ...(getOptionalObjectPayload(args, "payload") ?? {}) };
+      const typed = {
+        name: getOptionalString(args, "name"),
+        description: getOptionalString(args, "description"),
+        tags: getOptionalStringArray(args, "tags"),
+        launchSource: getOptionalString(args, "launchSource"),
+      };
+      for (const [key, value] of Object.entries(typed)) {
+        if (value !== undefined) body[key] = value;
       }
-      return api.createTestRun(client, payload);
+      if (typeof args.projectId === "string" || typeof args.projectName === "string" || !body.projectId) {
+        body.projectId = await resolveProjectId(args, client);
+      }
+      return api.createTestRun(client, body);
+    },
+    complete_test_run: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.completeTestRun(client, getRequiredId(args) as string);
     },
     start_test_run: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
