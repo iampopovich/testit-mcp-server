@@ -7,6 +7,7 @@ import { createSharedStepTools } from "./tools/shared-steps.js";
 import { createWorkItemTools } from "./tools/work-items.js";
 import { createSectionTools } from "./tools/sections.js";
 import { createTestPlanTools } from "./tools/test-plans.js";
+import { createTestSuiteTools } from "./tools/test-suites.js";
 import { createTestResultTools } from "./tools/test-results.js";
 import { annotationsFor } from "./tools/annotations.js";
 import { McpToolDefinition, ToolBundle, ToolHandler } from "./tools/types.js";
@@ -34,6 +35,7 @@ export function buildToolBundles(client: TestITApiClient): NamedToolBundle[] {
     { category: "Test Runs", toolset: "test-runs", ...createTestRunTools(client) },
     { category: "Test Results", toolset: "test-results", ...createTestResultTools(client) },
     { category: "Test Plans", toolset: "test-plans", ...createTestPlanTools(client) },
+    { category: "Test Suites & Points", toolset: "test-suites", ...createTestSuiteTools(client) },
     { category: "Analytics", toolset: "analytics", ...createAnalyticTools(client) },
     { category: "Shared Steps", toolset: "shared-steps", ...createSharedStepTools(client) },
     { category: "Configurations", toolset: "configurations", ...createConfigurationTools(client) },

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T08:13:41.896Z",
-  "totalTools": 57,
+  "generatedAt": "2026-11-12T08:16:09.904Z",
+  "totalTools": 65,
   "categories": [
     {
       "name": "Projects",
@@ -1895,6 +1895,276 @@
               "id": {
                 "type": "string",
                 "description": "Test plan UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Test Suites & Points",
+      "toolset": "test-suites",
+      "tools": [
+        {
+          "name": "list_test_plan_test_suites",
+          "description": "Get the test suite tree of a test plan (suites with nested children).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testPlanId": {
+                "type": "string",
+                "description": "Test plan UUID."
+              }
+            },
+            "required": [
+              "testPlanId"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_test_suite",
+          "description": "Get a test suite by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test suite UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "create_test_suite",
+          "description": "Create a test suite in a test plan (top-level, or nested under parentId). Then fill it with set_test_suite_work_items.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testPlanId": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "parentId": {
+                "type": "string",
+                "description": "Parent suite UUID for a nested suite."
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "Custom",
+                  "Dynamic",
+                  "Tree"
+                ],
+                "description": "Default Custom."
+              }
+            },
+            "required": [
+              "testPlanId",
+              "name"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_test_suite_work_items",
+          "description": "Set the work items of a test suite. REPLACES the current list; test points are created for each work item x suite configuration (the default configuration if none set).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test suite UUID."
+              },
+              "workItemIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "workItemIds"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_test_suite_configurations",
+          "description": "Set the configurations of a test suite (replaces the current list).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test suite UUID."
+              },
+              "configurationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "configurationIds"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_test_suite_test_points",
+          "description": "List test points of a test suite (work item x configuration, with status and tester).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test suite UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "search_test_points",
+          "description": "Search test points across test plans/suites. Typed fields are merged with an optional raw \"filter\" (TestPointFilterRequestModel).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "testPlanIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "testSuiteIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "configurationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "testerIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "statuses": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "InProgress",
+                    "Passed",
+                    "Failed",
+                    "NoResults",
+                    "Blocked",
+                    "Skipped"
+                  ]
+                }
+              },
+              "name": {
+                "type": "string"
+              },
+              "filter": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_test_suite",
+          "description": "Delete a test suite with its nested suites and test points.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test suite UUID."
               }
             },
             "required": [
