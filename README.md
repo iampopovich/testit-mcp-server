@@ -43,6 +43,9 @@ TESTIT_TOKEN=your-api-token
 - `TESTIT_URL` required
 - `TESTIT_TOKEN` required
 - `TESTIT_PROJECT_ID` optional
+- `TESTIT_READ_ONLY` optional (`true`/`1`): expose only read-only tools (list/get/search)
+
+Every tool carries MCP annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`), so clients can ask for confirmation before destructive calls (delete/purge and full-replacement `update_*`).
 
 ## Run Locally
 

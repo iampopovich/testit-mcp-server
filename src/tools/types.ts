@@ -1,3 +1,12 @@
+/** MCP tool annotations (hints for clients; see MCP spec ToolAnnotations). */
+export interface ToolAnnotations {
+  title?: string;
+  readOnlyHint?: boolean;
+  destructiveHint?: boolean;
+  idempotentHint?: boolean;
+  openWorldHint?: boolean;
+}
+
 export interface McpToolDefinition {
   name: string;
   description: string;
@@ -7,6 +16,7 @@ export interface McpToolDefinition {
     required?: string[];
     additionalProperties?: boolean;
   };
+  annotations?: ToolAnnotations;
 }
 
 export type ToolHandler = (args: unknown) => Promise<unknown>;
