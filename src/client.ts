@@ -41,7 +41,9 @@ export function formatErrorDetail(text: string): string {
       errors?: Record<string, string[]>;
     };
     if (parsed.error?.key) {
-      return parsed.error.type ? `${parsed.error.type}: ${parsed.error.key}` : parsed.error.key;
+      return parsed.error.type && parsed.error.type !== parsed.error.key
+        ? `${parsed.error.type}: ${parsed.error.key}`
+        : parsed.error.key;
     }
     if (parsed.errors) {
       const fields = Object.entries(parsed.errors)
@@ -56,6 +58,29 @@ export function formatErrorDetail(text: string): string {
   return trimmed.length > MAX_ERROR_DETAIL_LENGTH
     ? `${trimmed.slice(0, MAX_ERROR_DETAIL_LENGTH)}…`
     : trimmed || "(empty response)";
+}
+
+/**
+ * Rejects request paths whose segments are empty, dot-segments or carry URL
+ * delimiters. IDs from tool arguments are interpolated into paths, so an id like
+ * "../projects/<uuid>" would otherwise reach a different endpoint than the tool
+ * (and its toolset / read-only gate) intends.
+ */
+export function assertSafePath(path: string): void {
+  const segments = path.replace(/^\/+/, "").split("/");
+  for (const segment of segments) {
+    let decoded: string;
+    try {
+      decoded = decodeURIComponent(segment);
+    } catch {
+      decoded = segment;
+    }
+    if (segment === "" || decoded === "." || decoded === ".." || /[/\\?#]/.test(decoded)) {
+      throw new Error(
+        `Invalid request path "${path}": an ID argument is empty or contains "/", "\\", "?", "#" or a dot-segment.`,
+      );
+    }
+  }
 }
 
 export class TestITApiClient {
@@ -223,6 +248,7 @@ export class TestITApiClient {
   }
 
   private buildUrl(path: string, query?: QueryParams): string {
+    assertSafePath(path);
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
     const url = new URL(`${this.baseUrl}${normalizedPath}`);
 

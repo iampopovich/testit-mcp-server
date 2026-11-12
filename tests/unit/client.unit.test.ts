@@ -84,10 +84,37 @@ describe("TestITApiClient", () => {
     );
   });
 
+  it.each([
+    "/api/v2/workItems/../projects/p1",
+    "/api/v2/workItems/%2e%2e/projects/p1",
+    "/api/v2/workItems/.%2E/projects/p1",
+    "/api/v2/testRuns//start",
+    "/api/v2/testRuns/x?foo=1/start",
+    "/api/v2/testRuns/x#y",
+    "/api/v2/testRuns/a%2Fb",
+    "/api/v2/testRuns/a\\b",
+  ])("rejects unsafe path %s without sending a request", async (path) => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(makeClient().delete(path)).rejects.toThrow("Invalid request path");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("accepts normal paths with UUIDs and numeric ids", async () => {
+    const fetchMock = vi.fn().mockImplementation(async () => jsonResponse(200, {}));
+    vi.stubGlobal("fetch", fetchMock);
+    await makeClient().get("/api/v2/workItems/01a1ce94-6275-70d1-bf63-cf1bd8135b5e/versions");
+    await makeClient().get("api/v2/workItems/648");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("formatErrorDetail handles validation errors, plain text and long bodies", () => {
     expect(formatErrorDetail(JSON.stringify({ title: "Validation failed.", errors: { Name: ["required"] } }))).toBe(
       "Validation failed. Name: required",
     );
+    expect(
+      formatErrorDetail(JSON.stringify({ error: { type: "SomeException", key: "SomeException" } })),
+    ).toBe("SomeException");
     expect(formatErrorDetail("oops")).toBe("oops");
     expect(formatErrorDetail("")).toBe("(empty response)");
     expect(formatErrorDetail("x".repeat(600))).toHaveLength(501);
