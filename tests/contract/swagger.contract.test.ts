@@ -34,6 +34,7 @@ const EXTRA_ARGS: Record<string, Record<string, unknown>> = {
   set_configuration: { name: "x" },
   set_work_item: { name: "x" },
   set_test_run: { name: "x" },
+  set_autotests_flaky: { value: true },
 };
 
 /** Canned responses for tools that read before they write ("METHOD path" -> body). */

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T14:18:05.890Z",
-  "totalTools": 100,
+  "generatedAt": "2026-11-12T14:32:39.877Z",
+  "totalTools": 113,
   "categories": [
     {
       "name": "Projects",
@@ -590,6 +590,13 @@
                 "type": "object",
                 "additionalProperties": true,
                 "description": "Custom attributes {attributeId: value}."
+              },
+              "attachmentIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Attachment UUIDs from upload_attachment."
               },
               "payload": {
                 "type": "object",
@@ -3265,6 +3272,148 @@
             "idempotentHint": true,
             "openWorldHint": true
           }
+        },
+        {
+          "name": "get_autotest_results_history",
+          "description": "Results of an autotest across test runs (status, outcome, run, plan, configuration, duration), newest first.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Autotest UUID."
+              },
+              "statusCodes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "e.g. FAILED (list_test_statuses)."
+              },
+              "testRunIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "testPlanIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "configurationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_autotest_test_runs",
+          "description": "Test runs that contain the autotest.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Autotest UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_autotest_average_duration",
+          "description": "Average duration (ms) of passed and failed results of an autotest.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Autotest UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_autotests_flaky",
+          "description": "Mark (value=true) or unmark (value=false) autotests as flaky by id.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "autoTestIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Autotest UUIDs, non-empty."
+              },
+              "value": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "autoTestIds",
+              "value"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
         }
       ]
     },
@@ -3688,6 +3837,268 @@
               "id": {
                 "type": "string",
                 "description": "Configuration UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Configuration Parameters",
+      "toolset": "configuration-parameters",
+      "tools": [
+        {
+          "name": "search_configuration_parameters",
+          "description": "List configuration parameters (e.g. browser, os) with their values and projects. Defaults to the current project; name filters by substring.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string"
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string",
+                "description": "Substring of the parameter name (applied client-side)."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_configuration_parameter",
+          "description": "Get a configuration parameter with its values and projects.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Configuration parameter UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "create_configuration_parameter",
+          "description": "Create a configuration parameter with allowed values.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Parameter name, e.g. browser."
+              },
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Allowed values, e.g. [\"firefox\", \"chrome\"]."
+              },
+              "projectIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Projects the parameter is available in (default: current project)."
+              },
+              "projectId": {
+                "type": "string"
+              },
+              "projectName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "values"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "update_configuration_parameter",
+          "description": "Replace a configuration parameter (PUT): name, the FULL list of values and projects. Values not sent are removed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Configuration parameter UUID."
+              },
+              "name": {
+                "type": "string",
+                "description": "Parameter name, e.g. browser."
+              },
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Allowed values, e.g. [\"firefox\", \"chrome\"]."
+              },
+              "projectIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Projects the parameter is available in (default: current project)."
+              },
+              "projectId": {
+                "type": "string"
+              },
+              "projectName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "values"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_configuration_parameter",
+          "description": "Delete a configuration parameter.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Configuration parameter UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attachments",
+      "toolset": "attachments",
+      "tools": [
+        {
+          "name": "upload_attachment",
+          "description": "Upload a file to TestIT and get its attachment id/metadata. Pass the id in attachmentIds of create_work_item to attach it.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "filename": {
+                "type": "string",
+                "description": "File name including extension."
+              },
+              "contentType": {
+                "type": "string",
+                "description": "MIME type, e.g. image/png."
+              },
+              "contentBase64": {
+                "type": "string",
+                "description": "File content encoded as base64."
+              }
+            },
+            "required": [
+              "filename",
+              "contentType",
+              "contentBase64"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_attachment",
+          "description": "Download an attachment; content is returned base64-encoded.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Attachment UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_attachment_metadata",
+          "description": "Attachment metadata: name, type, size, author, dates.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Attachment UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_attachment",
+          "description": "Delete an attachment that is not linked to any entity (TestIT returns 422 for linked ones).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Attachment UUID."
               }
             },
             "required": [

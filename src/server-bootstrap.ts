@@ -10,6 +10,8 @@ import { createTestPlanTools } from "./tools/test-plans.js";
 import { createTestSuiteTools } from "./tools/test-suites.js";
 import { createAutoTestTools } from "./tools/autotests.js";
 import { createDictionaryTools } from "./tools/dictionaries.js";
+import { createConfigurationParameterTools } from "./tools/configuration-parameters.js";
+import { createAttachmentTools } from "./tools/attachments.js";
 import { createTestResultTools } from "./tools/test-results.js";
 import { annotationsFor } from "./tools/annotations.js";
 import { McpToolDefinition, ToolBundle, ToolHandler } from "./tools/types.js";
@@ -42,6 +44,12 @@ export function buildToolBundles(client: TestITApiClient): NamedToolBundle[] {
     { category: "Analytics", toolset: "analytics", ...createAnalyticTools(client) },
     { category: "Shared Steps", toolset: "shared-steps", ...createSharedStepTools(client) },
     { category: "Configurations", toolset: "configurations", ...createConfigurationTools(client) },
+    {
+      category: "Configuration Parameters",
+      toolset: "configuration-parameters",
+      ...createConfigurationParameterTools(client),
+    },
+    { category: "Attachments", toolset: "attachments", ...createAttachmentTools(client) },
     { category: "Dictionaries", toolset: "dictionaries", ...createDictionaryTools(client) },
   ];
 }

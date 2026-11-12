@@ -130,6 +130,45 @@ export function createAutoTestTools(client: TestITApiClient): ToolBundle {
       description: "Remove the link between an autotest and a work item.",
       inputSchema: linkSchema,
     },
+    {
+      name: "get_autotest_results_history",
+      description:
+        "Results of an autotest across test runs (status, outcome, run, plan, configuration, duration), newest first.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Autotest UUID." },
+          statusCodes: { type: "array", items: { type: "string" }, description: "e.g. FAILED (list_test_statuses)." },
+          testRunIds: { type: "array", items: { type: "string" } },
+          testPlanIds: { type: "array", items: { type: "string" } },
+          configurationIds: { type: "array", items: { type: "string" } },
+          ...PAGINATION_PROPERTIES,
+        },
+        required: ["id"],
+      },
+    },
+    {
+      name: "list_autotest_test_runs",
+      description: "Test runs that contain the autotest.",
+      inputSchema: idOnly("Autotest UUID."),
+    },
+    {
+      name: "get_autotest_average_duration",
+      description: "Average duration (ms) of passed and failed results of an autotest.",
+      inputSchema: idOnly("Autotest UUID."),
+    },
+    {
+      name: "set_autotests_flaky",
+      description: "Mark (value=true) or unmark (value=false) autotests as flaky by id.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          autoTestIds: { type: "array", items: { type: "string" }, description: "Autotest UUIDs, non-empty." },
+          value: { type: "boolean" },
+        },
+        required: ["autoTestIds", "value"],
+      },
+    },
   ];
 
   const handlers = {
@@ -196,6 +235,36 @@ export function createAutoTestTools(client: TestITApiClient): ToolBundle {
     unlink_autotest_work_item: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
       return api.unlinkAutoTestWorkItem(client, getRequiredString(args, "id"), getRequiredString(args, "workItemId"));
+    },
+    get_autotest_results_history: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const filter = compact({
+        statusCodes: getOptionalStringArray(args, "statusCodes"),
+        testRunIds: getOptionalStringArray(args, "testRunIds"),
+        testPlanIds: getOptionalStringArray(args, "testPlanIds"),
+        configurationIds: getOptionalStringArray(args, "configurationIds"),
+      });
+      return api.searchAutoTestResultsHistory(client, getRequiredString(args, "id"), filter, pickPagination(args));
+    },
+    list_autotest_test_runs: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.listAutoTestTestRuns(client, getRequiredString(args, "id"));
+    },
+    get_autotest_average_duration: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.getAutoTestAverageDuration(client, getRequiredString(args, "id"));
+    },
+    set_autotests_flaky: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const ids = getOptionalStringArray(args, "autoTestIds");
+      if (!ids || ids.length === 0) {
+        throw new Error('"autoTestIds" must be a non-empty array (an empty selection would match all autotests).');
+      }
+      const value = getOptionalBoolean(args, "value");
+      if (value === undefined) {
+        throw new Error('"value" must be a boolean.');
+      }
+      return api.setAutoTestsFlaky(client, ids, value);
     },
   };
 

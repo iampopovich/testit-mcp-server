@@ -35,3 +35,28 @@ export function linkAutoTestWorkItem(client: TestITApiClient, id: string, workIt
 export function unlinkAutoTestWorkItem(client: TestITApiClient, id: string, workItemId: string): Promise<unknown> {
   return client.delete(`/api/v2/autoTests/${id}/workItems`, { workItemId });
 }
+
+export function searchAutoTestResultsHistory(
+  client: TestITApiClient,
+  id: string,
+  filter: Record<string, unknown>,
+  query: QueryParams,
+): Promise<unknown> {
+  return client.post(`/api/v2/autoTests/${id}/testResults/search`, filter, query);
+}
+
+export function listAutoTestTestRuns(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.get(`/api/v2/autoTests/${id}/testRuns`);
+}
+
+export function getAutoTestAverageDuration(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.get(`/api/v2/autoTests/${id}/averageDuration`);
+}
+
+/** Bulk flaky flag by explicit ids (an empty selection would match every autotest). */
+export function setAutoTestsFlaky(client: TestITApiClient, autoTestIds: string[], value: boolean): Promise<unknown> {
+  return client.post("/api/v2/autoTests/flaky/bulk", {
+    autoTestSelect: { extractionModel: { ids: { include: autoTestIds } } },
+    value,
+  });
+}

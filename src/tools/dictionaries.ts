@@ -56,7 +56,7 @@ export function createDictionaryTools(client: TestITApiClient): ToolBundle {
   const handlers = {
     list_test_statuses: async () => {
       const result = await api.searchTestStatuses(client, {});
-      return result.data;
+      return result?.data ?? [];
     },
     list_tags: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

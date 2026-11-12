@@ -70,6 +70,7 @@ async function buildCreateWorkItemBody(
     steps: args.steps,
     postconditionSteps: args.postconditionSteps,
     attributes: getOptionalObjectPayload(args, "attributes"),
+    attachments: getOptionalStringArray(args, "attachmentIds")?.map((id) => ({ id })),
   };
   for (const [key, value] of Object.entries(typed)) {
     if (value !== undefined) {
@@ -153,6 +154,11 @@ export function createWorkItemTools(
           steps: STEPS_SCHEMA,
           postconditionSteps: STEPS_SCHEMA,
           attributes: { type: "object", additionalProperties: true, description: "Custom attributes {attributeId: value}." },
+          attachmentIds: {
+            type: "array",
+            items: { type: "string" },
+            description: "Attachment UUIDs from upload_attachment.",
+          },
           payload: {
             type: "object",
             additionalProperties: true,
