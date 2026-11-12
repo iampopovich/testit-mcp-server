@@ -241,6 +241,22 @@ export function createAdminTools(client: TestITApiClient): ToolBundle {
       inputSchema: { type: "object" as const, properties: idProp("Notification UUID; omit to mark all.") },
     },
     {
+      name: "search_background_jobs",
+      description:
+        "Background jobs of the current user (exports, imports, purges started in TestIT) with state and progress.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          states: {
+            type: "array",
+            items: { type: "string", enum: ["Enqueued", "InProgress", "Completed", "Failed", "Canceled"] },
+          },
+          types: { type: "array", items: { type: "string" }, description: "e.g. ExportXlsxTestPointsByTestPlan." },
+          ...PAGINATION_PROPERTIES,
+        },
+      },
+    },
+    {
       name: "get_project_autotest_settings",
       description: "Autotest settings of a project: reruns, flaky detection, run retention, work item updating.",
       inputSchema: { type: "object" as const, properties: PROJECT },
@@ -340,6 +356,14 @@ export function createAdminTools(client: TestITApiClient): ToolBundle {
       const args = asObject(rawArgs);
       const notificationId = getOptionalString(args, "id");
       return notificationId ? api.markNotificationRead(client, notificationId) : api.markAllNotificationsRead(client);
+    },
+    search_background_jobs: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const filter = compact({
+        states: getOptionalStringArray(args, "states"),
+        types: getOptionalStringArray(args, "types"),
+      });
+      return api.searchBackgroundJobs(client, filter, pickPagination(args));
     },
     get_project_autotest_settings: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

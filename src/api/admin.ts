@@ -78,3 +78,8 @@ export function getProjectAutoTestSettings(client: TestITApiClient, projectId: s
 export function saveProjectAutoTestSettings(client: TestITApiClient, projectId: string, body: Body): Promise<unknown> {
   return client.post(`/api/v2/projects/${projectId}/settings/autotests`, body);
 }
+
+// Background jobs of the current user (exports/imports/purges started in the UI)
+export function searchBackgroundJobs(client: TestITApiClient, filter: Body, query: QueryParams): Promise<unknown> {
+  return client.post("/api/v2/backgroundJobs/search", filter, query);
+}

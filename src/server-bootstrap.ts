@@ -14,6 +14,7 @@ import { createConfigurationParameterTools } from "./tools/configuration-paramet
 import { createAttachmentTools } from "./tools/attachments.js";
 import { createCustomAttributeTools } from "./tools/custom-attributes.js";
 import { createAdminTools } from "./tools/admin.js";
+import { createBulkTools } from "./tools/bulk.js";
 import { createTestResultTools } from "./tools/test-results.js";
 import { annotationsFor } from "./tools/annotations.js";
 import { McpToolDefinition, ToolBundle, ToolHandler } from "./tools/types.js";
@@ -55,6 +56,7 @@ export function buildToolBundles(client: TestITApiClient): NamedToolBundle[] {
     { category: "Dictionaries", toolset: "dictionaries", ...createDictionaryTools(client) },
     { category: "Custom Attributes (admin)", toolset: "admin", ...createCustomAttributeTools(client) },
     { category: "Webhooks, Workflows, Notifications, Settings (admin)", toolset: "admin", ...createAdminTools(client) },
+    { category: "Bulk operations", toolset: "bulk", ...createBulkTools(client) },
   ];
 }
 

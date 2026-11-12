@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T15:21:17.761Z",
-  "totalTools": 168,
+  "generatedAt": "2026-11-12T15:26:23.435Z",
+  "totalTools": 180,
   "categories": [
     {
       "name": "Projects",
@@ -6070,6 +6070,67 @@
           }
         },
         {
+          "name": "search_background_jobs",
+          "description": "Background jobs of the current user (exports, imports, purges started in TestIT) with state and progress.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "states": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "Enqueued",
+                    "InProgress",
+                    "Completed",
+                    "Failed",
+                    "Canceled"
+                  ]
+                }
+              },
+              "types": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "e.g. ExportXlsxTestPointsByTestPlan."
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
           "name": "get_project_autotest_settings",
           "description": "Autotest settings of a project: reruns, flaky detection, run retention, work item updating.",
           "inputSchema": {
@@ -6138,6 +6199,383 @@
           "annotations": {
             "readOnlyHint": false,
             "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bulk operations",
+      "toolset": "bulk",
+      "optIn": true,
+      "tools": [
+        {
+          "name": "delete_test_runs",
+          "description": "Archive several test runs at once (restore_test_runs undoes it).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Test run UUIDs (non-empty)."
+              }
+            },
+            "required": [
+              "ids"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "restore_test_runs",
+          "description": "Restore several archived test runs at once.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Test run UUIDs (non-empty)."
+              }
+            },
+            "required": [
+              "ids"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "purge_test_runs",
+          "description": "Permanently delete several ARCHIVED test runs at once. Irreversible.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Test run UUIDs (non-empty)."
+              }
+            },
+            "required": [
+              "ids"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_test_plans",
+          "description": "Archive several test plans at once (restore_test_plans undoes it).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Test plan UUIDs (non-empty)."
+              }
+            },
+            "required": [
+              "ids"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "restore_test_plans",
+          "description": "Restore several archived test plans at once.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Test plan UUIDs (non-empty)."
+              }
+            },
+            "required": [
+              "ids"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "purge_test_plans",
+          "description": "Permanently delete several ARCHIVED test plans at once. Irreversible.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Test plan UUIDs (non-empty)."
+              }
+            },
+            "required": [
+              "ids"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_configurations",
+          "description": "Archive several configurations at once (restore_configurations undoes it).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Configuration UUIDs (non-empty)."
+              }
+            },
+            "required": [
+              "ids"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "restore_configurations",
+          "description": "Restore several archived configurations at once.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Configuration UUIDs (non-empty)."
+              }
+            },
+            "required": [
+              "ids"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "purge_configurations",
+          "description": "Permanently delete several ARCHIVED configurations at once. Irreversible.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Configuration UUIDs (non-empty)."
+              }
+            },
+            "required": [
+              "ids"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_test_runs",
+          "description": "Edit several test runs at once: description and/or tags. tagsAction: Add, Replace, ToRemove (remove the given tags) or ClearAll.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Test run UUIDs (non-empty)."
+              },
+              "description": {
+                "type": "string"
+              },
+              "tagsAction": {
+                "type": "string",
+                "enum": [
+                  "Add",
+                  "Replace",
+                  "ToRemove",
+                  "ClearAll"
+                ]
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "ids"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_autotests",
+          "description": "Archive several autotests at once (no restore/purge for autotests). Returns {deletedCount, inProgressCount}.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Autotest UUIDs (non-empty)."
+              }
+            },
+            "required": [
+              "ids"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
             "idempotentHint": true,
             "openWorldHint": true
           }
