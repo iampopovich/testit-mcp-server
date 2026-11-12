@@ -2,7 +2,7 @@
  * End-to-end over the real MCP stdio transport: spawns the built server
  * (dist/index.js) and talks to it with the SDK client.
  */
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
@@ -63,5 +63,45 @@ describe.skipIf(!integrationEnabled || !existsSync(serverPath))("integration: MC
       expect(result.isError).toBe(true);
       expect((result.content as Array<{ text: string }>)[0].text).toContain("Unknown tool");
     });
+  });
+
+  it("reports the package version and turns tool errors into isError results", async () => {
+    await withServer({}, async (client) => {
+      const pkg = JSON.parse(readFileSync("package.json", "utf8")) as { version: string };
+      expect(client.getServerVersion()).toMatchObject({ name: "testit-mcp-server", version: pkg.version });
+
+      const traversal = await client.callTool({
+        name: "get_work_item",
+        arguments: { id: `../projects/${getProjectId()}` },
+      });
+      expect(traversal.isError).toBe(true);
+      expect((traversal.content as Array<{ text: string }>)[0].text).toMatch(/^Error: Invalid request path/);
+
+      const missing = await client.callTool({
+        name: "get_work_item",
+        arguments: { id: "00000000-0000-0000-0000-000000000001" },
+      });
+      expect(missing.isError).toBe(true);
+      expect((missing.content as Array<{ text: string }>)[0].text).toMatch(/failed \(404\).*Hint:/);
+
+      const noArgs = await client.callTool({ name: "get_work_item", arguments: {} });
+      expect(noArgs.isError).toBe(true);
+      expect((noArgs.content as Array<{ text: string }>)[0].text).toContain('"id" must be');
+
+      const unknown = await client.callTool({ name: "no_such_tool", arguments: {} });
+      expect(unknown.isError).toBe(true);
+    });
+  });
+
+  it("admin and bulk toolsets are opt-in", async () => {
+    const names = async (env: Record<string, string>) =>
+      withServer(env, async (client) => (await client.listTools()).tools.map((t) => t.name));
+    const byDefault = await names({});
+    expect(byDefault).not.toContain("search_webhooks");
+    expect(byDefault).not.toContain("delete_autotests");
+    const withOptIn = await names({ TESTIT_TOOLSETS: "default,admin,bulk" });
+    expect(withOptIn).toEqual(expect.arrayContaining(["search_webhooks", "delete_autotests", "get_work_item"]));
+    const all = await names({ TESTIT_TOOLSETS: "all" });
+    expect(new Set(all)).toEqual(new Set(withOptIn));
   });
 });
