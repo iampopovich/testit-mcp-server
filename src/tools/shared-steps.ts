@@ -4,6 +4,7 @@ import type { ToolBundle } from "./types.js";
 import {
   asObject,
   getRequiredId,
+  PAGINATION_PROPERTIES,
   pickPagination,
   resolveProjectId,
 } from "./utils.js";
@@ -20,8 +21,7 @@ export function createSharedStepTools(
         properties: {
           projectId: { type: "string" },
           projectName: { type: "string" },
-          page: { type: "number" },
-          size: { type: "number" },
+          ...PAGINATION_PROPERTIES,
         },
       },
     },

@@ -74,7 +74,15 @@ describe.skipIf(!specAvailable)("contract: tools vs TestIT OpenAPI spec", () => 
     it(tool.name, async () => {
       const client = createRecordingClient();
       const { handlers } = buildToolRegistry(client as never);
-      await handlers.get(tool.name)?.(sampleArgs(tool.inputSchema));
+      const args = sampleArgs(tool.inputSchema);
+      // Exercise advertised paging params so unsupported ones get caught.
+      const props = tool.inputSchema.properties ?? {};
+      if ("take" in props) args.take = 5;
+      if ("skip" in props) args.skip = 5;
+      if ("orderBy" in props) args.orderBy = "createdDate desc";
+      if ("searchField" in props) args.searchField = "name";
+      if ("searchValue" in props) args.searchValue = "x";
+      await handlers.get(tool.name)?.(args);
       expect(client.calls.length, "tool made no HTTP calls").toBeGreaterThan(0);
 
       const problems = violationsFor(paths, client.calls);

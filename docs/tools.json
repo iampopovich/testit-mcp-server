@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T07:40:13.844Z",
+  "generatedAt": "2026-11-12T07:41:39.349Z",
   "totalTools": 40,
   "categories": [
     {
@@ -11,11 +11,33 @@
           "inputSchema": {
             "type": "object",
             "properties": {
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
               "page": {
-                "type": "number"
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
               },
               "size": {
-                "type": "number"
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
               }
             }
           }
@@ -93,11 +115,33 @@
                 "type": "object",
                 "description": "Search filter object."
               },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
               "page": {
-                "type": "number"
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
               },
               "size": {
-                "type": "number"
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
               }
             },
             "required": [
@@ -124,13 +168,33 @@
                 "type": "string",
                 "description": "Project name (alternative to projectId)."
               },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
               "page": {
                 "type": "number",
-                "description": "Page number."
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
               },
               "size": {
                 "type": "number",
-                "description": "Page size."
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
               }
             }
           }
@@ -145,11 +209,33 @@
                 "type": "object",
                 "description": "Search filter object according to TestIT API."
               },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
               "page": {
-                "type": "number"
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
               },
               "size": {
-                "type": "number"
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
               }
             },
             "required": [
@@ -231,11 +317,33 @@
                 "type": "string",
                 "description": "Work item UUID."
               },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
               "page": {
-                "type": "number"
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
               },
               "size": {
-                "type": "number"
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
               }
             },
             "required": [
@@ -323,11 +431,33 @@
               "projectName": {
                 "type": "string"
               },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
               "page": {
-                "type": "number"
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
               },
               "size": {
-                "type": "number"
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
               }
             }
           }
@@ -416,13 +546,8 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
-              },
-              "page": {
-                "type": "number"
-              },
-              "size": {
-                "type": "number"
+                "type": "string",
+                "description": "Test run UUID."
               }
             },
             "required": [
@@ -459,11 +584,33 @@
               "query": {
                 "type": "object"
               },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
               "page": {
-                "type": "number"
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
               },
               "size": {
-                "type": "number"
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
               }
             },
             "required": [
@@ -509,11 +656,9 @@
               "projectName": {
                 "type": "string"
               },
-              "page": {
-                "type": "number"
-              },
-              "size": {
-                "type": "number"
+              "isDeleted": {
+                "type": "boolean",
+                "description": "Return archived (deleted) test plans."
               }
             }
           }
@@ -598,11 +743,33 @@
               "projectName": {
                 "type": "string"
               },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
               "page": {
-                "type": "number"
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
               },
               "size": {
-                "type": "number"
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
               }
             }
           }
@@ -660,11 +827,33 @@
               "projectName": {
                 "type": "string"
               },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
               "page": {
-                "type": "number"
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
               },
               "size": {
-                "type": "number"
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
               }
             }
           }
@@ -700,12 +889,6 @@
               },
               "projectName": {
                 "type": "string"
-              },
-              "page": {
-                "type": "number"
-              },
-              "size": {
-                "type": "number"
               }
             }
           }

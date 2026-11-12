@@ -17,4 +17,12 @@ describe.skipIf(!integrationEnabled)("integration: projects", () => {
     const found = await callTool<Project[]>("search_projects", { query: { name: project.name } });
     expect(found.map((p) => p.id)).toContain(getProjectId());
   });
+
+  it("search_projects pages with page/size as offsets (page 2 != page 1)", async () => {
+    const all = await callTool<Project[]>("search_projects", { query: {}, orderBy: "name" });
+    const page1 = await callTool<Project[]>("search_projects", { query: {}, orderBy: "name", page: 1, size: 1 });
+    const page2 = await callTool<Project[]>("search_projects", { query: {}, orderBy: "name", page: 2, size: 1 });
+    expect(page1.map((p) => p.id)).toEqual(all.slice(0, 1).map((p) => p.id));
+    expect(page2.map((p) => p.id)).toEqual(all.slice(1, 2).map((p) => p.id));
+  });
 });

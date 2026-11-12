@@ -4,6 +4,7 @@ import type { ToolBundle } from "./types.js";
 import {
   asObject,
   getRequiredId,
+  PAGINATION_PROPERTIES,
   pickPagination,
 } from "./utils.js";
 
@@ -27,8 +28,7 @@ export function createTestResultTools(
         type: "object" as const,
         properties: {
           query: { type: "object" },
-          page: { type: "number" },
-          size: { type: "number" },
+          ...PAGINATION_PROPERTIES,
         },
         required: ["query"],
       },

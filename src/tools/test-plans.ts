@@ -4,7 +4,7 @@ import type { ToolBundle } from "./types.js";
 import {
   asObject,
   getRequiredId,
-  pickPagination,
+  getOptionalBoolean,
   resolveProjectId,
 } from "./utils.js";
 
@@ -20,8 +20,7 @@ export function createTestPlanTools(
         properties: {
           projectId: { type: "string" },
           projectName: { type: "string" },
-          page: { type: "number" },
-          size: { type: "number" },
+          isDeleted: { type: "boolean", description: "Return archived (deleted) test plans." },
         },
       },
     },
@@ -71,7 +70,9 @@ export function createTestPlanTools(
     list_test_plans: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
       const projectId = await resolveProjectId(args, client);
-      return api.listTestPlans(client, projectId, pickPagination(args));
+      return api.listTestPlans(client, projectId, {
+        isDeleted: getOptionalBoolean(args, "isDeleted"),
+      });
     },
     get_test_plan: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

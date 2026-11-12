@@ -4,6 +4,7 @@ import type { ToolBundle } from "./types.js";
 import {
   asObject,
   getRequiredId,
+  PAGINATION_PROPERTIES,
   pickPagination,
 } from "./utils.js";
 
@@ -17,8 +18,7 @@ export function createProjectTools(
       inputSchema: {
         type: "object" as const,
         properties: {
-          page: { type: "number" },
-          size: { type: "number" },
+          ...PAGINATION_PROPERTIES,
         },
       },
     },
@@ -69,8 +69,7 @@ export function createProjectTools(
         type: "object" as const,
         properties: {
           query: { type: "object", description: "Search filter object." },
-          page: { type: "number" },
-          size: { type: "number" },
+          ...PAGINATION_PROPERTIES,
         },
         required: ["query"],
       },

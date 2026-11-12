@@ -4,7 +4,6 @@ import type { ToolBundle } from "./types.js";
 import {
   asObject,
   getRequiredId,
-  pickPagination,
   resolveProjectId,
 } from "./utils.js";
 
@@ -20,8 +19,6 @@ export function createConfigurationTools(
         properties: {
           projectId: { type: "string" },
           projectName: { type: "string" },
-          page: { type: "number" },
-          size: { type: "number" },
         },
       },
     },
@@ -62,7 +59,7 @@ export function createConfigurationTools(
     list_configurations: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
       const projectId = await resolveProjectId(args, client);
-      return api.listConfigurations(client, projectId, pickPagination(args));
+      return api.listConfigurations(client, projectId, {});
     },
     get_configuration: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

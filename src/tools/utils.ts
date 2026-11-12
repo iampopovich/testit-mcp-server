@@ -163,10 +163,44 @@ export function getOptionalObjectPayload(
 type QueryValue = string | number | boolean | Array<string | number | boolean>;
 type QueryParams = Record<string, QueryValue | undefined>;
 
+export const DEFAULT_PAGE_SIZE = 50;
+
+/**
+ * Input-schema properties for TestIT list/search endpoints that accept
+ * Skip/Take/OrderBy/SearchField/SearchValue query params.
+ */
+export const PAGINATION_PROPERTIES = {
+  skip: { type: "number", description: "Number of items to skip (offset)." },
+  take: { type: "number", description: "Max number of items to return." },
+  page: {
+    type: "number",
+    description: `1-based page number; alternative to skip. Uses "size" (default ${DEFAULT_PAGE_SIZE}).`,
+  },
+  size: { type: "number", description: "Page size for \"page\"; alias of take." },
+  orderBy: { type: "string", description: "Sort expression, e.g. \"createdDate desc\"." },
+  searchField: { type: "string", description: "Field name to search in." },
+  searchValue: { type: "string", description: "Value to search for in searchField." },
+} as const;
+
+/**
+ * Maps tool args to TestIT query params. "skip"/"take" win over "page"/"size";
+ * page is 1-based and converted to an offset.
+ */
 export function pickPagination(args: ToolArgs): QueryParams {
+  const take = getOptionalNumber(args, "take") ?? getOptionalNumber(args, "size");
+  let skip = getOptionalNumber(args, "skip");
+  const page = getOptionalNumber(args, "page");
+  if (skip === undefined && page !== undefined) {
+    if (!Number.isInteger(page) || page < 1) {
+      throw new Error("\"page\" must be an integer >= 1.");
+    }
+    skip = (page - 1) * (take ?? DEFAULT_PAGE_SIZE);
+  }
   return {
-    Skip: getOptionalNumber(args, "skip") ?? getOptionalNumber(args, "page"),
-    Take: getOptionalNumber(args, "take") ?? getOptionalNumber(args, "size"),
+    Skip: skip,
+    Take: take ?? (page !== undefined ? DEFAULT_PAGE_SIZE : undefined),
     OrderBy: getOptionalString(args, "orderBy") ?? getOptionalString(args, "sort"),
+    SearchField: getOptionalString(args, "searchField"),
+    SearchValue: getOptionalString(args, "searchValue"),
   };
 }

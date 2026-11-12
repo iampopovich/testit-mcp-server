@@ -10,8 +10,10 @@ import {
   getRequiredId,
   getRequiredNumber,
   getRequiredString,
+  pickPagination,
   resolveProjectId,
 } from "../../../src/tools/utils.js";
+import { definedQuery as definedOnly } from "../tool-test-helpers.js";
 
 describe("tool utils", () => {
   afterEach(() => {
@@ -60,6 +62,21 @@ describe("tool utils", () => {
     expect(() => getOptionalObjectPayload({ payload: [] })).toThrow(
       '"payload" must be an object when provided.',
     );
+  });
+
+  it("pickPagination: skip/take pass through, page is 1-based offset", () => {
+    expect(definedOnly(pickPagination({ skip: 10, take: 5 }))).toEqual({ Skip: 10, Take: 5 });
+    expect(definedOnly(pickPagination({ page: 1, size: 20 }))).toEqual({ Skip: 0, Take: 20 });
+    expect(definedOnly(pickPagination({ page: 3, size: 20 }))).toEqual({ Skip: 40, Take: 20 });
+    expect(definedOnly(pickPagination({ page: 2 }))).toEqual({ Skip: 50, Take: 50 });
+    expect(definedOnly(pickPagination({ page: 2, skip: 7 }))).toEqual({ Skip: 7, Take: 50 });
+    expect(definedOnly(pickPagination({ orderBy: "name", searchField: "name", searchValue: "x" }))).toEqual({
+      OrderBy: "name",
+      SearchField: "name",
+      SearchValue: "x",
+    });
+    expect(definedOnly(pickPagination({}))).toEqual({});
+    expect(() => pickPagination({ page: 0 })).toThrow('"page" must be an integer >= 1.');
   });
 
   it("resolveProjectId prefers explicit projectId", async () => {
