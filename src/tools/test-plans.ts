@@ -3,6 +3,7 @@ import * as api from "../api/test-plans.js";
 import type { ToolBundle } from "./types.js";
 import {
   asObject,
+  getObjectPayload,
   getRequiredId,
   getOptionalBoolean,
   getOptionalObjectPayload,
@@ -246,7 +247,7 @@ export function createTestPlanTools(
     },
     update_test_plan: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
-      const payload = (args.payload as Record<string, unknown>) || {};
+      const payload = getObjectPayload(args);
       return api.updateTestPlan(client, payload);
     },
     set_test_plan_state: async (rawArgs: unknown) => {

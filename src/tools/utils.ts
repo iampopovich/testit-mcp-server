@@ -16,6 +16,18 @@ export function getRequiredId(args: ToolArgs, key = "id"): string | number {
   throw new Error(`"${key}" must be a string (UUID) or a number.`);
 }
 
+/**
+ * Required base64 (standard or URL-safe, whitespace ignored). Buffer.from() silently
+ * drops invalid characters, so without this check garbage would be uploaded.
+ */
+export function getRequiredBase64(args: ToolArgs, key: string): string {
+  const value = getRequiredString(args, key).replace(/\s+/g, "");
+  if (!/^[A-Za-z0-9+/_-]*={0,2}$/.test(value) || value.replace(/=+$/, "").length % 4 === 1) {
+    throw new Error(`"${key}" must be valid base64.`);
+  }
+  return value;
+}
+
 export function getRequiredNumber(args: ToolArgs, key: string): number {
   const value = args[key];
   if (typeof value === "string" && /^-?\d+(\.\d+)?$/.test(value)) {

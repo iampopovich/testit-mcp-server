@@ -5,6 +5,7 @@ import {
   asObject,
   getOptionalBoolean,
   getOptionalString,
+  getObjectPayload,
   getRequiredId,
   PAGINATION_PROPERTIES,
   pickPagination,
@@ -126,12 +127,12 @@ export function createProjectTools(
     },
     create_project: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
-      const payload = (args.payload as Record<string, unknown>) || {};
+      const payload = getObjectPayload(args);
       return api.createProject(client, payload);
     },
     update_project: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
-      const payload = (args.payload as Record<string, unknown>) || {};
+      const payload = getObjectPayload(args);
       return api.updateProject(client, payload);
     },
     delete_project: async (rawArgs: unknown) => {

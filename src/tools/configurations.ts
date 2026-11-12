@@ -6,6 +6,7 @@ import {
   getOptionalBoolean,
   getOptionalObjectPayload,
   getOptionalString,
+  getObjectPayload,
   getRequiredId,
   getRequiredString,
   PAGINATION_PROPERTIES,
@@ -188,7 +189,7 @@ export function createConfigurationTools(
     },
     update_configuration: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
-      const payload = (args.payload as Record<string, unknown>) || {};
+      const payload = getObjectPayload(args);
       return api.updateConfiguration(client, payload);
     },
     delete_configuration: async (rawArgs: unknown) => {

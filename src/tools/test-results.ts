@@ -3,6 +3,7 @@ import * as api from "../api/test-results.js";
 import type { ToolBundle } from "./types.js";
 import {
   asObject,
+  getRequiredBase64,
   getOptionalNumber,
   getOptionalObjectPayload,
   getOptionalString,
@@ -318,7 +319,7 @@ export function createTestResultTools(
         getRequiredString(args, "id"),
         getRequiredString(args, "filename"),
         getRequiredString(args, "contentType"),
-        getRequiredString(args, "contentBase64"),
+        getRequiredBase64(args, "contentBase64"),
       );
       return { id: attachmentId };
     },

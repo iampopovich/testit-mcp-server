@@ -3,12 +3,14 @@ import * as api from "../api/work-items.js";
 import type { ToolBundle } from "./types.js";
 import {
   asObject,
+  getRequiredBase64,
   buildWorkItemFilter,
   getOptionalObjectPayload,
   getOptionalNumber,
   getOptionalString,
   getOptionalStringArray,
   getRequiredString,
+  getObjectPayload,
   getRequiredId,
   PAGINATION_PROPERTIES,
   pickPagination,
@@ -413,7 +415,7 @@ export function createWorkItemTools(
     },
     update_work_item: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
-      const payload = (args.payload as Record<string, unknown>) || {};
+      const payload = getObjectPayload(args);
       return api.updateWorkItem(client, payload);
     },
     delete_work_item: async (rawArgs: unknown) => {
@@ -441,7 +443,7 @@ export function createWorkItemTools(
       const id = getRequiredId(args) as string;
       const filename = getRequiredString(args, "filename");
       const contentType = getRequiredString(args, "contentType");
-      const contentBase64 = getRequiredString(args, "contentBase64");
+      const contentBase64 = getRequiredBase64(args, "contentBase64");
       return api.uploadWorkItemAttachment(client, id, filename, contentType, contentBase64);
     },
     set_work_item: async (rawArgs: unknown) => {

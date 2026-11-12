@@ -1,7 +1,7 @@
 import type { TestITApiClient } from "../client.js";
 import * as api from "../api/attachments.js";
 import type { ToolBundle } from "./types.js";
-import { asObject, getRequiredString } from "./utils.js";
+import { asObject, getRequiredBase64, getRequiredString } from "./utils.js";
 
 const idOnly = {
   type: "object" as const,
@@ -50,7 +50,7 @@ export function createAttachmentTools(client: TestITApiClient): ToolBundle {
         client,
         getRequiredString(args, "filename"),
         getRequiredString(args, "contentType"),
-        getRequiredString(args, "contentBase64"),
+        getRequiredBase64(args, "contentBase64"),
       );
     },
     get_attachment: async (rawArgs: unknown) => {

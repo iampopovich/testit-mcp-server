@@ -53,7 +53,14 @@ export function createSharedStepTools(
     },
     get_shared_step: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
-      return api.getSharedStep(client, getRequiredId(args) as string);
+      const id = getRequiredId(args) as string;
+      const item = (await api.getSharedStep(client, id)) as { entityTypeName?: string } | undefined;
+      if (item?.entityTypeName && item.entityTypeName !== "SharedSteps") {
+        throw new Error(
+          `Work item ${id} is a ${item.entityTypeName} item, not a shared step. Use get_work_item for it.`,
+        );
+      }
+      return item;
     },
   };
 
