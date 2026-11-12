@@ -22,6 +22,8 @@ const VERB_ANNOTATIONS: Record<string, ToolAnnotations> = {
   restore: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
   rename: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
   move: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+  link: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+  unlink: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
   set: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
   update: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
   delete: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },

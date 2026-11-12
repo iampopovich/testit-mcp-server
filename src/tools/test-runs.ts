@@ -82,6 +82,29 @@ export function createTestRunTools(
       },
     },
     {
+      name: "create_test_run_from_work_items",
+      description:
+        "Create a test run inside a test plan for the given work items x configurations (the plan becomes " +
+        "InProgress). Only AUTOMATED work items are accepted (linked to an autotest, see " +
+        "link_autotest_work_item); TestIT rejects manual ones. Results are pre-created and filled via " +
+        "submit_test_run_results; the run completes when all results are in.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          projectId: { type: "string", description: "Project UUID (defaults to TESTIT_PROJECT_ID)." },
+          projectName: { type: "string" },
+          testPlanId: { type: "string" },
+          workItemIds: { type: "array", items: { type: "string" } },
+          configurationIds: { type: "array", items: { type: "string" } },
+          name: { type: "string" },
+          description: { type: "string" },
+          tags: { type: "array", items: { type: "string" } },
+          launchSource: { type: "string" },
+        },
+        required: ["testPlanId", "workItemIds", "configurationIds"],
+      },
+    },
+    {
       name: "complete_test_run",
       description: "Complete a test run (InProgress/Stopped -> Completed).",
       inputSchema: {
@@ -165,6 +188,32 @@ export function createTestRunTools(
         body.projectId = await resolveProjectId(args, client);
       }
       return api.createTestRun(client, body);
+    },
+    create_test_run_from_work_items: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const required = (key: string): string[] => {
+        const value = getOptionalStringArray(args, key);
+        if (!value || value.length === 0) {
+          throw new Error(`"${key}" must be a non-empty array of strings.`);
+        }
+        return value;
+      };
+      const body: Record<string, unknown> = {
+        projectId: await resolveProjectId(args, client),
+        testPlanId: getRequiredId(args, "testPlanId"),
+        workItemIds: required("workItemIds"),
+        configurationIds: required("configurationIds"),
+      };
+      const optional = {
+        name: getOptionalString(args, "name"),
+        description: getOptionalString(args, "description"),
+        tags: getOptionalStringArray(args, "tags"),
+        launchSource: getOptionalString(args, "launchSource"),
+      };
+      for (const [key, value] of Object.entries(optional)) {
+        if (value !== undefined) body[key] = value;
+      }
+      return api.createTestRunByWorkItems(client, body);
     },
     complete_test_run: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

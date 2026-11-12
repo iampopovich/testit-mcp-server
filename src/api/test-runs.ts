@@ -34,6 +34,14 @@ export function completeTestRun(client: TestITApiClient, id: string): Promise<un
   return client.post(`/api/v2/testRuns/${id}/complete`);
 }
 
+/** Create a run inside a test plan from automated work items x configurations. */
+export function createTestRunByWorkItems(
+  client: TestITApiClient,
+  body: Record<string, unknown>,
+): Promise<unknown> {
+  return client.post("/api/v2/testRuns/byWorkItems", body);
+}
+
 export function deleteTestRun(client: TestITApiClient, id: string): Promise<unknown> {
   return client.delete(`/api/v2/testRuns/${id}`);
 }

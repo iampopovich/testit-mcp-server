@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { callTool, getClient, getProjectId, integrationEnabled, removeTestRun, uniqueName } from "./setup.js";
+import { callSafe, callTool, integrationEnabled, removeTestRun, uniqueName } from "./setup.js";
 
 interface TestResult {
   id: string;
@@ -15,13 +15,8 @@ describe.skipIf(!integrationEnabled)("integration: test results", () => {
   let configurationId: string;
 
   beforeAll(async () => {
-    // Fixture: an autotest is required to submit results into a run (no autotest tools yet).
-    const autoTest = await getClient().post<{ id: string }>("/api/v2/autoTests", {
-      externalId,
-      projectId: getProjectId(),
-      name: externalId,
-    });
-    autoTestId = autoTest.id;
+    // An autotest is required to submit results into a run.
+    autoTestId = (await callTool<{ id: string }>("create_autotest", { externalId, name: externalId })).id;
     const configurations = await callTool<Array<{ id: string }>>("list_configurations", {});
     configurationId = configurations[0].id;
     runId = (await callTool<{ id: string }>("create_test_run", { name: uniqueName("results") })).id;
@@ -29,9 +24,7 @@ describe.skipIf(!integrationEnabled)("integration: test results", () => {
 
   afterAll(async () => {
     await removeTestRun(runId);
-    if (autoTestId) {
-      await getClient().delete(`/api/v2/autoTests/${autoTestId}`).catch(() => undefined);
-    }
+    await callSafe("delete_autotest", { id: autoTestId });
   });
 
   it("submit -> set (partial) -> update (full replace) -> search", async () => {
