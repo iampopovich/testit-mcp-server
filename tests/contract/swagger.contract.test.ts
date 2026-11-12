@@ -38,6 +38,8 @@ const EXTRA_ARGS: Record<string, Record<string, unknown>> = {
   set_project: { name: "x" },
   set_autotest: { name: "x" },
   set_global_attribute: { name: "x" },
+  set_webhook: { name: "x" },
+  set_project_autotest_settings: { testRunsRetentionPeriodDays: 90 },
   set_project_attribute: { name: "x" },
   create_attribute_template: { attributeIds: ["a", "b"] },
   create_test_run_from_test_points: { testPointSelectors: [{ configurationId: "c", workItemIds: ["w"] }] },

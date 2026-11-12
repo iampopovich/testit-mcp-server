@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T15:13:24.469Z",
-  "totalTools": 152,
+  "generatedAt": "2026-11-12T15:21:17.761Z",
+  "totalTools": 168,
   "categories": [
     {
       "name": "Projects",
@@ -5484,6 +5484,660 @@
           "annotations": {
             "readOnlyHint": false,
             "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks, Workflows, Notifications, Settings (admin)",
+      "toolset": "admin",
+      "optIn": true,
+      "tools": [
+        {
+          "name": "search_webhooks",
+          "description": "Search webhooks (default: current project).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "eventTypes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "AutomatedTestRunCreated",
+                    "TestPlansStatusChanged",
+                    "TestRunStopped",
+                    "TestPointAssigned",
+                    "TestResultJiraIssueCreated",
+                    "AutoTestFinished",
+                    "UserMentionedInComment",
+                    "UserSelectedInWorkItemAttribute",
+                    "AllTestPointsFinished",
+                    "AllAutoTestsFinished",
+                    "AutoTestChanged",
+                    "WorkItemAutoTestRelationChanged",
+                    "WorkItemAttributeChanged",
+                    "WorkItemChanged",
+                    "ConfigurationChanged",
+                    "ProjectChanged",
+                    "TestPlanChanged"
+                  ]
+                }
+              },
+              "isEnabled": {
+                "type": "boolean"
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_webhook",
+          "description": "Get a webhook by id.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Webhook UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "create_webhook",
+          "description": "Create a project webhook fired on eventType. Defaults: Post, enabled, TestIT JSON body. Passing customBody sends it instead of the default body.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "eventType": {
+                "type": "string",
+                "enum": [
+                  "AutomatedTestRunCreated",
+                  "TestPlansStatusChanged",
+                  "TestRunStopped",
+                  "TestPointAssigned",
+                  "TestResultJiraIssueCreated",
+                  "AutoTestFinished",
+                  "UserMentionedInComment",
+                  "UserSelectedInWorkItemAttribute",
+                  "AllTestPointsFinished",
+                  "AllAutoTestsFinished",
+                  "AutoTestChanged",
+                  "WorkItemAutoTestRelationChanged",
+                  "WorkItemAttributeChanged",
+                  "WorkItemChanged",
+                  "ConfigurationChanged",
+                  "ProjectChanged",
+                  "TestPlanChanged"
+                ]
+              },
+              "url": {
+                "type": "string"
+              },
+              "requestType": {
+                "type": "string",
+                "enum": [
+                  "Post",
+                  "Put",
+                  "Delete"
+                ],
+                "description": "HTTP method, default Post."
+              },
+              "isEnabled": {
+                "type": "boolean",
+                "description": "Default true."
+              },
+              "description": {
+                "type": "string"
+              },
+              "headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "queryParameters": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "shouldSendBody": {
+                "type": "boolean",
+                "description": "Send TestIT's default JSON body (default true)."
+              },
+              "customBody": {
+                "type": "string",
+                "description": "Custom body; may contain variables from list_webhook_variables."
+              },
+              "shouldReplaceParameters": {
+                "type": "boolean",
+                "description": "Substitute $VARIABLES in url/headers/body."
+              },
+              "shouldEscapeParameters": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "name",
+              "eventType",
+              "url"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_webhook",
+          "description": "Change some fields of a webhook (e.g. isEnabled=false to pause it); other fields are kept.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Webhook UUID."
+              },
+              "name": {
+                "type": "string"
+              },
+              "eventType": {
+                "type": "string",
+                "enum": [
+                  "AutomatedTestRunCreated",
+                  "TestPlansStatusChanged",
+                  "TestRunStopped",
+                  "TestPointAssigned",
+                  "TestResultJiraIssueCreated",
+                  "AutoTestFinished",
+                  "UserMentionedInComment",
+                  "UserSelectedInWorkItemAttribute",
+                  "AllTestPointsFinished",
+                  "AllAutoTestsFinished",
+                  "AutoTestChanged",
+                  "WorkItemAutoTestRelationChanged",
+                  "WorkItemAttributeChanged",
+                  "WorkItemChanged",
+                  "ConfigurationChanged",
+                  "ProjectChanged",
+                  "TestPlanChanged"
+                ]
+              },
+              "url": {
+                "type": "string"
+              },
+              "requestType": {
+                "type": "string",
+                "enum": [
+                  "Post",
+                  "Put",
+                  "Delete"
+                ],
+                "description": "HTTP method, default Post."
+              },
+              "isEnabled": {
+                "type": "boolean",
+                "description": "Default true."
+              },
+              "description": {
+                "type": "string"
+              },
+              "headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "queryParameters": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "shouldSendBody": {
+                "type": "boolean",
+                "description": "Send TestIT's default JSON body (default true)."
+              },
+              "customBody": {
+                "type": "string",
+                "description": "Custom body; may contain variables from list_webhook_variables."
+              },
+              "shouldReplaceParameters": {
+                "type": "boolean",
+                "description": "Substitute $VARIABLES in url/headers/body."
+              },
+              "shouldEscapeParameters": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_webhook",
+          "description": "Delete a webhook permanently.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Webhook UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_webhook_variables",
+          "description": "Variables ($TEST_PLAN_NAME, ...) available for an event type, for url or body templates.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "eventType": {
+                "type": "string",
+                "enum": [
+                  "AutomatedTestRunCreated",
+                  "TestPlansStatusChanged",
+                  "TestRunStopped",
+                  "TestPointAssigned",
+                  "TestResultJiraIssueCreated",
+                  "AutoTestFinished",
+                  "UserMentionedInComment",
+                  "UserSelectedInWorkItemAttribute",
+                  "AllTestPointsFinished",
+                  "AllAutoTestsFinished",
+                  "AutoTestChanged",
+                  "WorkItemAutoTestRelationChanged",
+                  "WorkItemAttributeChanged",
+                  "WorkItemChanged",
+                  "ConfigurationChanged",
+                  "ProjectChanged",
+                  "TestPlanChanged"
+                ]
+              },
+              "variablesType": {
+                "type": "string",
+                "description": "VariablesForUrl (default) or VariablesForBody."
+              }
+            },
+            "required": [
+              "eventType"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "submit_webhook_test",
+          "description": "Send a test request from TestIT to a URL and return the HTTP response it got.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "requestType": {
+                "type": "string",
+                "enum": [
+                  "Post",
+                  "Put",
+                  "Delete"
+                ]
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_webhook_logs",
+          "description": "Recent webhook calls of a project (request, response, status).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_workflows",
+          "description": "Workflows (sets of test statuses) with the projects using them. Read-only here: creating workflows needs the custom statuses feature of the TestIT plan.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_workflow",
+          "description": "A workflow with its statuses (code, type, priority).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Workflow UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_workflow_projects",
+          "description": "Projects that use a workflow.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Workflow UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "search_notifications",
+          "description": "Notifications of the current user (mentions, assigned test points, ...).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "isRead": {
+                "type": "boolean"
+              },
+              "types": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "MentionInComment",
+                    "TestPointIsSetInTestPlan",
+                    "MentionInCustomAttribute",
+                    "TestPlanUnlockRequest"
+                  ]
+                }
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_notifications_count",
+          "description": "Number of notifications of the current user in the last 7 days (optionally only unread).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "isRead": {
+                "type": "boolean"
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_notifications_read",
+          "description": "Mark one notification (id) or, without id, ALL notifications of the current user as read.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Notification UUID; omit to mark all."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_project_autotest_settings",
+          "description": "Autotest settings of a project: reruns, flaky detection, run retention, work item updating.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_project_autotest_settings",
+          "description": "Change some autotest settings of a project; others are kept. Some (reruns, flaky thresholds) need a paid TestIT feature and fail with 402 otherwise.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "rerunEnabled": {
+                "type": "boolean"
+              },
+              "rerunAttemptsCount": {
+                "type": "integer"
+              },
+              "isFlakyAuto": {
+                "type": "boolean"
+              },
+              "flakyStabilityPercentage": {
+                "type": "integer"
+              },
+              "flakyTestRunCount": {
+                "type": "integer"
+              },
+              "workItemUpdatingEnabled": {
+                "type": "boolean",
+                "description": "Update linked work items from autotest results."
+              },
+              "archiveOutdatedTestRunsEnabled": {
+                "type": "boolean"
+              },
+              "testRunsArchiveLimitEnabled": {
+                "type": "boolean"
+              },
+              "testRunsRetentionPeriodDays": {
+                "type": "integer"
+              },
+              "maxActiveTestRunsCount": {
+                "type": "integer"
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
             "idempotentHint": true,
             "openWorldHint": true
           }
