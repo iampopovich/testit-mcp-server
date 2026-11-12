@@ -3,12 +3,17 @@ import type { TestITApiClient } from "../client.js";
 type QueryValue = string | number | boolean | Array<string | number | boolean>;
 type QueryParams = Record<string, QueryValue | undefined | null>;
 
-export function listWorkItems(
+/**
+ * Search work items inside a project (replaces deprecated
+ * GET /projects/{projectId}/workItems). Body: { filter, extractionModel? }.
+ */
+export function searchProjectWorkItems(
   client: TestITApiClient,
   projectId: string,
+  filter: Record<string, unknown>,
   query: QueryParams,
 ): Promise<unknown> {
-  return client.get(`/api/v2/projects/${projectId}/workItems`, query);
+  return client.post(`/api/v2/projects/${projectId}/workItems/search`, { filter }, query);
 }
 
 export function searchWorkItems(

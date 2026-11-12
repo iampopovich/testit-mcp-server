@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T07:41:39.349Z",
+  "generatedAt": "2026-11-12T07:43:24.146Z",
   "totalTools": 40,
   "categories": [
     {
@@ -7,10 +7,21 @@
       "tools": [
         {
           "name": "list_projects",
-          "description": "List all projects.",
+          "description": "List projects, optionally filtered by name, archive or favorite flag.",
           "inputSchema": {
             "type": "object",
             "properties": {
+              "name": {
+                "type": "string",
+                "description": "Filter by (part of) project name."
+              },
+              "isDeleted": {
+                "type": "boolean",
+                "description": "Return archived projects."
+              },
+              "isFavorite": {
+                "type": "boolean"
+              },
               "skip": {
                 "type": "number",
                 "description": "Number of items to skip (offset)."
@@ -156,7 +167,7 @@
       "tools": [
         {
           "name": "list_work_items",
-          "description": "List work items (test cases, checklists, shared steps) for a project.",
+          "description": "List work items (test cases, checklists, shared steps) of a project, with optional filters.",
           "inputSchema": {
             "type": "object",
             "properties": {
@@ -167,6 +178,67 @@
               "projectName": {
                 "type": "string",
                 "description": "Project name (alternative to projectId)."
+              },
+              "name": {
+                "type": "string",
+                "description": "Filter by (part of) work item name."
+              },
+              "types": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "TestCases",
+                    "CheckLists",
+                    "SharedSteps"
+                  ]
+                },
+                "description": "Work item types."
+              },
+              "states": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "NeedsWork",
+                    "NotReady",
+                    "Ready"
+                  ]
+                }
+              },
+              "priorities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "Lowest",
+                    "Low",
+                    "Medium",
+                    "High",
+                    "Highest"
+                  ]
+                }
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names."
+              },
+              "sectionIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Section UUIDs."
+              },
+              "isAutomated": {
+                "type": "boolean"
+              },
+              "isDeleted": {
+                "type": "boolean",
+                "description": "Search archived (deleted) work items."
               },
               "skip": {
                 "type": "number",
@@ -817,7 +889,7 @@
       "tools": [
         {
           "name": "list_shared_steps",
-          "description": "List shared steps for a project.",
+          "description": "List shared steps of a project, with optional filters.",
           "inputSchema": {
             "type": "object",
             "properties": {
@@ -826,6 +898,55 @@
               },
               "projectName": {
                 "type": "string"
+              },
+              "name": {
+                "type": "string",
+                "description": "Filter by (part of) work item name."
+              },
+              "states": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "NeedsWork",
+                    "NotReady",
+                    "Ready"
+                  ]
+                }
+              },
+              "priorities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "Lowest",
+                    "Low",
+                    "Medium",
+                    "High",
+                    "Highest"
+                  ]
+                }
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names."
+              },
+              "sectionIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Section UUIDs."
+              },
+              "isAutomated": {
+                "type": "boolean"
+              },
+              "isDeleted": {
+                "type": "boolean",
+                "description": "Search archived (deleted) work items."
               },
               "skip": {
                 "type": "number",

@@ -3,10 +3,6 @@ import type { TestITApiClient } from "../client.js";
 type QueryValue = string | number | boolean | Array<string | number | boolean>;
 type QueryParams = Record<string, QueryValue | undefined | null>;
 
-export function listProjects(client: TestITApiClient, query: QueryParams): Promise<unknown> {
-  return client.get("/api/v2/projects", query);
-}
-
 export function searchProjects(
   client: TestITApiClient,
   query: Record<string, unknown>,

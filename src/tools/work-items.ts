@@ -3,11 +3,13 @@ import * as api from "../api/work-items.js";
 import type { ToolBundle } from "./types.js";
 import {
   asObject,
+  buildWorkItemFilter,
   getRequiredString,
   getRequiredId,
   PAGINATION_PROPERTIES,
   pickPagination,
   resolveProjectId,
+  WORK_ITEM_FILTER_PROPERTIES,
 } from "./utils.js";
 
 export function createWorkItemTools(
@@ -16,7 +18,8 @@ export function createWorkItemTools(
   const tools = [
     {
       name: "list_work_items",
-      description: "List work items (test cases, checklists, shared steps) for a project.",
+      description:
+        "List work items (test cases, checklists, shared steps) of a project, with optional filters.",
       inputSchema: {
         type: "object" as const,
         properties: {
@@ -25,6 +28,7 @@ export function createWorkItemTools(
             type: "string",
             description: "Project name (alternative to projectId).",
           },
+          ...WORK_ITEM_FILTER_PROPERTIES,
           ...PAGINATION_PROPERTIES,
         },
       },
@@ -134,7 +138,12 @@ export function createWorkItemTools(
     list_work_items: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
       const projectId = await resolveProjectId(args, client);
-      return api.listWorkItems(client, String(projectId), pickPagination(args));
+      return api.searchProjectWorkItems(
+        client,
+        String(projectId),
+        buildWorkItemFilter(args),
+        pickPagination(args),
+      );
     },
     search_work_items: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

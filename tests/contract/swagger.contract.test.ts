@@ -24,11 +24,7 @@ const specAvailable = Boolean(specPath && existsSync(specPath));
  * Known contract violations still to be fixed. Each fix iteration removes
  * entries; the test fails if an entry is no longer needed (stale allowlist).
  */
-const KNOWN_VIOLATIONS: Record<string, string> = {
-  list_projects: "uses deprecated GET /api/v2/projects",
-  list_work_items: "uses deprecated GET /api/v2/projects/{projectId}/workItems",
-  list_shared_steps: "uses deprecated endpoint and unknown query param entityTypes",
-};
+const KNOWN_VIOLATIONS: Record<string, string> = {};
 
 function findTemplate(paths: SpecPaths, method: string, path: string): string | undefined {
   const candidates = Object.keys(paths).filter((template) => {

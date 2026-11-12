@@ -3,11 +3,17 @@ import * as api from "../api/shared-steps.js";
 import type { ToolBundle } from "./types.js";
 import {
   asObject,
+  buildWorkItemFilter,
   getRequiredId,
   PAGINATION_PROPERTIES,
   pickPagination,
   resolveProjectId,
+  WORK_ITEM_FILTER_PROPERTIES,
 } from "./utils.js";
+
+const SHARED_STEP_FILTER_PROPERTIES = Object.fromEntries(
+  Object.entries(WORK_ITEM_FILTER_PROPERTIES).filter(([key]) => key !== "types"),
+);
 
 export function createSharedStepTools(
   client: TestITApiClient,
@@ -15,12 +21,13 @@ export function createSharedStepTools(
   const tools = [
     {
       name: "list_shared_steps",
-      description: "List shared steps for a project.",
+      description: "List shared steps of a project, with optional filters.",
       inputSchema: {
         type: "object" as const,
         properties: {
           projectId: { type: "string" },
           projectName: { type: "string" },
+          ...SHARED_STEP_FILTER_PROPERTIES,
           ...PAGINATION_PROPERTIES,
         },
       },
@@ -40,7 +47,9 @@ export function createSharedStepTools(
     list_shared_steps: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
       const projectId = await resolveProjectId(args, client);
-      return api.listSharedSteps(client, projectId, pickPagination(args));
+      const filter = buildWorkItemFilter(args);
+      delete filter.types;
+      return api.listSharedSteps(client, projectId, filter, pickPagination(args));
     },
     get_shared_step: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

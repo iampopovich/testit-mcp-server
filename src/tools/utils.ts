@@ -160,6 +160,44 @@ export function getOptionalObjectPayload(
   return payload as Record<string, unknown>;
 }
 
+/**
+ * Typed subset of TestIT WorkItemFilterApiModel exposed as tool args.
+ */
+export const WORK_ITEM_FILTER_PROPERTIES = {
+  name: { type: "string", description: "Filter by (part of) work item name." },
+  types: {
+    type: "array",
+    items: { type: "string", enum: ["TestCases", "CheckLists", "SharedSteps"] },
+    description: "Work item types.",
+  },
+  states: {
+    type: "array",
+    items: { type: "string", enum: ["NeedsWork", "NotReady", "Ready"] },
+  },
+  priorities: {
+    type: "array",
+    items: { type: "string", enum: ["Lowest", "Low", "Medium", "High", "Highest"] },
+  },
+  tags: { type: "array", items: { type: "string" }, description: "Tag names." },
+  sectionIds: { type: "array", items: { type: "string" }, description: "Section UUIDs." },
+  isAutomated: { type: "boolean" },
+  isDeleted: { type: "boolean", description: "Search archived (deleted) work items." },
+} as const;
+
+export function buildWorkItemFilter(args: ToolArgs): Record<string, unknown> {
+  const filter: Record<string, unknown> = {
+    name: getOptionalString(args, "name"),
+    types: getOptionalStringArray(args, "types"),
+    states: getOptionalStringArray(args, "states"),
+    priorities: getOptionalStringArray(args, "priorities"),
+    tags: getOptionalStringArray(args, "tags"),
+    sectionIds: getOptionalStringArray(args, "sectionIds"),
+    isAutomated: getOptionalBoolean(args, "isAutomated"),
+    isDeleted: getOptionalBoolean(args, "isDeleted"),
+  };
+  return Object.fromEntries(Object.entries(filter).filter(([, value]) => value !== undefined));
+}
+
 type QueryValue = string | number | boolean | Array<string | number | boolean>;
 type QueryParams = Record<string, QueryValue | undefined>;
 

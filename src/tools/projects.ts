@@ -3,6 +3,8 @@ import * as api from "../api/projects.js";
 import type { ToolBundle } from "./types.js";
 import {
   asObject,
+  getOptionalBoolean,
+  getOptionalString,
   getRequiredId,
   PAGINATION_PROPERTIES,
   pickPagination,
@@ -14,10 +16,13 @@ export function createProjectTools(
   const tools = [
     {
       name: "list_projects",
-      description: "List all projects.",
+      description: "List projects, optionally filtered by name, archive or favorite flag.",
       inputSchema: {
         type: "object" as const,
         properties: {
+          name: { type: "string", description: "Filter by (part of) project name." },
+          isDeleted: { type: "boolean", description: "Return archived projects." },
+          isFavorite: { type: "boolean" },
           ...PAGINATION_PROPERTIES,
         },
       },
@@ -79,7 +84,14 @@ export function createProjectTools(
   const handlers = {
     list_projects: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
-      return api.listProjects(client, pickPagination(args));
+      const filter = Object.fromEntries(
+        Object.entries({
+          name: getOptionalString(args, "name"),
+          isDeleted: getOptionalBoolean(args, "isDeleted"),
+          isFavorite: getOptionalBoolean(args, "isFavorite"),
+        }).filter(([, value]) => value !== undefined),
+      );
+      return api.searchProjects(client, filter, pickPagination(args));
     },
     get_project: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
