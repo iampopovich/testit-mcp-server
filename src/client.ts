@@ -9,11 +9,61 @@ export interface TestITApiClientOptions {
   defaultProjectId?: string;
 }
 
+const MAX_ERROR_DETAIL_LENGTH = 500;
+const MAX_RETRY_AFTER_MS = 10000;
+
+const STATUS_HINTS: Record<number, string> = {
+  401: "Check TESTIT_TOKEN (private API token) and TESTIT_URL.",
+  403: "The token's user lacks permission for this project or action.",
+  404: "Entity not found — check the ID; it may also be archived or purged.",
+  429: "Rate limited by TestIT; retry later.",
+};
+
+export class TestITApiError extends Error {
+  constructor(
+    readonly method: string,
+    readonly path: string,
+    readonly status: number,
+    readonly detail: string,
+  ) {
+    const hint = STATUS_HINTS[status];
+    super(`TestIT API ${method} ${path} failed (${status}): ${detail}${hint ? ` Hint: ${hint}` : ""}`);
+    this.name = "TestITApiError";
+  }
+}
+
+/** Extracts a short, readable error detail from a TestIT error response body. */
+export function formatErrorDetail(text: string): string {
+  try {
+    const parsed = JSON.parse(text) as {
+      error?: { key?: string; type?: string };
+      title?: string;
+      errors?: Record<string, string[]>;
+    };
+    if (parsed.error?.key) {
+      return parsed.error.type ? `${parsed.error.type}: ${parsed.error.key}` : parsed.error.key;
+    }
+    if (parsed.errors) {
+      const fields = Object.entries(parsed.errors)
+        .map(([field, messages]) => `${field}: ${messages.join("; ")}`)
+        .join(" | ");
+      return parsed.title ? `${parsed.title} ${fields}` : fields;
+    }
+  } catch {
+    // not JSON
+  }
+  const trimmed = text.trim();
+  return trimmed.length > MAX_ERROR_DETAIL_LENGTH
+    ? `${trimmed.slice(0, MAX_ERROR_DETAIL_LENGTH)}…`
+    : trimmed || "(empty response)";
+}
+
 export class TestITApiClient {
   private readonly baseUrl: string;
   private readonly tokenManager: TokenManager;
   readonly defaultProjectId: string | undefined;
   private readonly maxGetRetries = 2;
+  private readonly maxRateLimitRetries = 2;
   private readonly requestTimeoutMs = 30000;
 
   constructor(options: TestITApiClientOptions) {
@@ -51,61 +101,17 @@ export class TestITApiClient {
   }
 
   async postMultipart<T>(path: string, formData: FormData, query?: QueryParams): Promise<T> {
-    const accessToken = await this.tokenManager.getAccessToken();
-    const url = this.buildUrl(path, query);
-
-    const authHeader = accessToken.startsWith("Bearer ") || accessToken.startsWith("PrivateToken ")
-      ? accessToken
-      : `PrivateToken ${accessToken}`;
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        Authorization: authHeader,
-      },
-      body: formData,
-      signal: AbortSignal.timeout(this.requestTimeoutMs),
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`TestIT API POST ${path} failed (${response.status}): ${text}`);
-    }
-
-    if (response.status === 204) {
-      return undefined as T;
-    }
-
-    const contentType = response.headers.get("content-type") ?? "";
-    if (contentType.includes("application/json")) {
-      return (await response.json()) as T;
-    }
-
-    return (await response.text()) as T;
+    const response = await this.send("POST", path, query, async () => ({
+      Accept: "application/json",
+      Authorization: await this.authHeader(),
+    }), formData);
+    return this.parseBody<T>(response);
   }
 
   async getRaw(path: string, query?: QueryParams): Promise<{ contentType: string; content: string; encoding: string }> {
-    const accessToken = await this.tokenManager.getAccessToken();
-    const url = this.buildUrl(path, query);
-
-    const authHeader = accessToken.startsWith("Bearer ") || accessToken.startsWith("PrivateToken ")
-      ? accessToken
-      : `PrivateToken ${accessToken}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: authHeader,
-      },
-      signal: AbortSignal.timeout(this.requestTimeoutMs),
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`TestIT API GET ${path} failed (${response.status}): ${text}`);
-    }
-
+    const response = await this.send("GET", path, query, async () => ({
+      Authorization: await this.authHeader(),
+    }));
     const contentType = response.headers.get("content-type") ?? "application/octet-stream";
     const buffer = await response.arrayBuffer();
     const content = Buffer.from(buffer).toString("base64");
@@ -119,60 +125,101 @@ export class TestITApiClient {
     body?: unknown,
     query?: QueryParams,
   ): Promise<T> {
-    const accessToken = await this.tokenManager.getAccessToken();
+    const response = await this.send(
+      method,
+      path,
+      query,
+      async () => ({
+        Accept: "application/json",
+        Authorization: await this.authHeader(),
+        ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+      }),
+      body !== undefined ? JSON.stringify(body) : undefined,
+    );
+    return this.parseBody<T>(response);
+  }
+
+  /**
+   * Sends a request with retries:
+   * - GET: network errors and 502/503/504 (idempotent);
+   * - any method: 429, honoring Retry-After (the request was not processed).
+   */
+  private async send(
+    method: string,
+    path: string,
+    query: QueryParams | undefined,
+    headers: () => Promise<Record<string, string>>,
+    body?: RequestInit["body"],
+  ): Promise<Response> {
     const url = this.buildUrl(path, query);
-    const retries = method === "GET" ? this.maxGetRetries : 0;
+    const transientRetries = method === "GET" ? this.maxGetRetries : 0;
+    let transientAttempts = 0;
+    let rateLimitAttempts = 0;
 
-    const authHeader = accessToken.startsWith("Bearer ") || accessToken.startsWith("PrivateToken ")
-      ? accessToken
-      : `PrivateToken ${accessToken}`;
-
-    for (let attempt = 0; attempt <= retries; attempt += 1) {
+    for (;;) {
       let response: Response;
       try {
         response = await fetch(url, {
           method,
-          headers: {
-            Accept: "application/json",
-            Authorization: authHeader,
-            ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-          },
-          body: body !== undefined ? JSON.stringify(body) : undefined,
+          headers: await headers(),
+          body,
           signal: AbortSignal.timeout(this.requestTimeoutMs),
         });
-
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        if (attempt < retries && this.isRetryableNetworkError(message)) {
-          await this.wait(300 * (attempt + 1));
+        if (transientAttempts < transientRetries && this.isRetryableNetworkError(message)) {
+          transientAttempts += 1;
+          await this.wait(300 * transientAttempts);
           continue;
         }
         throw error;
       }
 
-      if (!response.ok) {
-        const text = await response.text();
-        const message = `TestIT API ${method} ${path} failed (${response.status}): ${text}`;
-        if (attempt < retries && [502, 503, 504].includes(response.status)) {
-          await this.wait(300 * (attempt + 1));
-          continue;
-        }
-        throw new Error(message);
+      if (response.ok) {
+        return response;
       }
 
-      if (response.status === 204) {
-        return undefined as T;
+      if (response.status === 429 && rateLimitAttempts < this.maxRateLimitRetries) {
+        rateLimitAttempts += 1;
+        await response.text();
+        await this.wait(this.retryAfterMs(response.headers.get("retry-after"), rateLimitAttempts));
+        continue;
+      }
+      if (transientAttempts < transientRetries && [502, 503, 504].includes(response.status)) {
+        transientAttempts += 1;
+        await response.text();
+        await this.wait(300 * transientAttempts);
+        continue;
       }
 
-      const contentType = response.headers.get("content-type") ?? "";
-      if (contentType.includes("application/json")) {
-        return (await response.json()) as T;
-      }
-
-      return (await response.text()) as T;
+      throw new TestITApiError(method, path, response.status, formatErrorDetail(await response.text()));
     }
+  }
 
-    throw new Error(`TestIT API ${method} ${path} failed after retries.`);
+  private async parseBody<T>(response: Response): Promise<T> {
+    if (response.status === 204) {
+      return undefined as T;
+    }
+    const contentType = response.headers.get("content-type") ?? "";
+    if (contentType.includes("application/json")) {
+      return (await response.json()) as T;
+    }
+    return (await response.text()) as T;
+  }
+
+  private async authHeader(): Promise<string> {
+    const accessToken = await this.tokenManager.getAccessToken();
+    return accessToken.startsWith("Bearer ") || accessToken.startsWith("PrivateToken ")
+      ? accessToken
+      : `PrivateToken ${accessToken}`;
+  }
+
+  private retryAfterMs(header: string | null, attempt: number): number {
+    const seconds = header ? Number(header) : Number.NaN;
+    if (Number.isFinite(seconds) && seconds >= 0) {
+      return Math.min(seconds * 1000, MAX_RETRY_AFTER_MS);
+    }
+    return Math.min(1000 * attempt, MAX_RETRY_AFTER_MS);
   }
 
   private buildUrl(path: string, query?: QueryParams): string {
@@ -214,5 +261,3 @@ export class TestITApiClient {
     await new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
-
-

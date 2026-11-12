@@ -18,6 +18,12 @@ describe.skipIf(!integrationEnabled)("integration: projects", () => {
     expect(found.map((p) => p.id)).toContain(getProjectId());
   });
 
+  it("API errors are short and carry a hint", async () => {
+    await expect(callTool("get_work_item", { id: "00000000-0000-0000-0000-000000000000" })).rejects.toThrow(
+      /failed \(404\): .+ Hint: Entity not found/,
+    );
+  });
+
   it("search_projects pages with page/size as offsets (page 2 != page 1)", async () => {
     const all = await callTool<Project[]>("search_projects", { query: {}, orderBy: "name" });
     const page1 = await callTool<Project[]>("search_projects", { query: {}, orderBy: "name", page: 1, size: 1 });

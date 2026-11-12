@@ -14,7 +14,8 @@ function formatToolResult(result: unknown): string {
   if (typeof result === "string") {
     return result;
   }
-  return JSON.stringify(result, null, 2);
+  // Compact JSON: pretty-printing large lists wastes model context.
+  return JSON.stringify(result);
 }
 
 function parseOptionalProjectId(value: string | undefined): string | undefined {
