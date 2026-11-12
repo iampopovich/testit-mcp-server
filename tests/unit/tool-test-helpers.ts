@@ -51,8 +51,8 @@ export function createRecordingClient(defaultProjectId?: string): RecordingClien
       calls.push({ method: "PATCH", path, body, query });
       return respond("PATCH", path);
     }),
-    delete: vi.fn(async (path: string, query?: Record<string, unknown>) => {
-      calls.push({ method: "DELETE", path, query });
+    delete: vi.fn(async (path: string, query?: Record<string, unknown>, body?: unknown) => {
+      calls.push({ method: "DELETE", path, body, query });
       return respond("DELETE", path);
     }),
     postMultipart: vi.fn(async (path: string, _form: unknown, query?: Record<string, unknown>) => {

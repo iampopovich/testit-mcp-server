@@ -96,8 +96,8 @@ export class TestITApiClient {
     return this.request<T>("PUT", path, body, query);
   }
 
-  async delete<T = unknown>(path: string, query?: QueryParams): Promise<T> {
-    return this.request<T>("DELETE", path, undefined, query);
+  async delete<T = unknown>(path: string, query?: QueryParams, body?: unknown): Promise<T> {
+    return this.request<T>("DELETE", path, body, query);
   }
 
   async postMultipart<T>(path: string, formData: FormData, query?: QueryParams): Promise<T> {

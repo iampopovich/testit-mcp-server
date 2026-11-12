@@ -78,5 +78,16 @@ describe.skipIf(!integrationEnabled)("integration: autotests and plan-based runs
     const points = await callTool<Array<{ status: string }>>("list_test_suite_test_points", { id: suite.id });
     expect(points.map((p) => p.status)).toEqual(["Passed"]);
     expect((await callTool<{ stateName: string }>("get_test_run", { id: run.id })).stateName).toBe("Completed");
+
+    const summary = await callTool<{ totalTestPointsCount: number; completedTestPointsCount: number }>(
+      "get_test_plan_summary",
+      { id: planId },
+    );
+    expect(summary).toMatchObject({ totalTestPointsCount: 1, completedTestPointsCount: 1 });
+
+    const [point] = await callTool<Array<{ id: string }>>("list_test_suite_test_points", { id: suite.id });
+    await callTool("reset_test_points", { id: planId, testPointIds: [point.id] });
+    const after = await callTool<Array<{ status: string }>>("list_test_suite_test_points", { id: suite.id });
+    expect(after.map((p) => p.status)).toEqual(["NoResults"]);
   });
 });

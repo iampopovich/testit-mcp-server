@@ -56,6 +56,26 @@ describe.skipIf(!integrationEnabled)("integration: test suites and test points",
     const found = await callTool<TestPoint[]>("search_test_points", { testPlanIds: [planId], statuses: ["NoResults"] });
     expect(found.map((p) => p.id)).toEqual(points.map((p) => p.id));
 
+    // Testers: no user list API, so use the plan author's id.
+    const plan = await callTool<{ createdById: string }>("get_test_plan", { id: planId });
+    const assigned = await callTool<string[]>("assign_test_points_tester", {
+      id: planId,
+      userId: plan.createdById,
+      testPointIds: [points[0].id],
+    });
+    expect(assigned).toEqual([points[0].id]);
+    const withTester = await callTool<Array<TestPoint & { testerId: string | null }>>("list_test_suite_test_points", {
+      id: suite.id,
+    });
+    expect(withTester.map((p) => p.testerId)).toEqual([plan.createdById]);
+    await callTool("unassign_test_points_tester", { id: planId, testPointIds: [points[0].id] });
+    const unassigned = await callTool<Array<{ testerId: string | null }>>("list_test_suite_test_points", { id: suite.id });
+    expect(unassigned.map((p) => p.testerId)).toEqual([null]);
+
+    const configs = await callTool<Array<{ id: string }>>("list_test_plan_configurations", { id: planId });
+    expect(configs.map((c) => c.id)).toEqual([configurationId]);
+    expect(Array.isArray(await callTool("get_test_plan_history", { id: planId }))).toBe(true);
+
     await callTool("delete_test_suite", { id: sub.id });
     await expect(callTool("get_test_suite", { id: sub.id })).rejects.toThrow("(404)");
   });

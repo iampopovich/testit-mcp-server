@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T14:14:22.096Z",
-  "totalTools": 94,
+  "generatedAt": "2026-11-12T14:18:05.890Z",
+  "totalTools": 100,
   "categories": [
     {
       "name": "Projects",
@@ -2491,6 +2491,189 @@
             "readOnlyHint": false,
             "destructiveHint": true,
             "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "assign_test_points_tester",
+          "description": "Assign a tester (user UUID) to the given test points of a test plan. TestIT has no user list API: take user ids from existing entities (createdById, testerId). Returns the affected point ids.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test plan UUID."
+              },
+              "userId": {
+                "type": "string",
+                "description": "Tester user UUID."
+              },
+              "testPointIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Test point UUIDs (see list_test_suite_test_points / search_test_points). Must not be empty."
+              }
+            },
+            "required": [
+              "id",
+              "userId",
+              "testPointIds"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "unassign_test_points_tester",
+          "description": "Remove the tester from the given test points of a test plan. Returns the affected point ids.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test plan UUID."
+              },
+              "testPointIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Test point UUIDs (see list_test_suite_test_points / search_test_points). Must not be empty."
+              }
+            },
+            "required": [
+              "id",
+              "testPointIds"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "reset_test_points",
+          "description": "Reset the given test points of a test plan back to NoResults (their results are discarded).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test plan UUID."
+              },
+              "testPointIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Test point UUIDs (see list_test_suite_test_points / search_test_points). Must not be empty."
+              }
+            },
+            "required": [
+              "id",
+              "testPointIds"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_test_plan_summary",
+          "description": "Test plan totals: test points (total/manual/automated/completed), defects, planned and spent duration.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test plan UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_test_plan_configurations",
+          "description": "Configurations used by the test points of a test plan.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test plan UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_test_plan_history",
+          "description": "Change history of a test plan.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test plan UUID."
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
             "openWorldHint": true
           }
         }

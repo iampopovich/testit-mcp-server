@@ -12,9 +12,28 @@ import {
   PAGINATION_PROPERTIES,
   pickPagination,
   resolveProjectId,
+  type ToolArgs,
 } from "./utils.js";
 
 const STATE_ACTIONS = ["start", "pause", "complete"] as const;
+
+const TEST_POINT_IDS = {
+  type: "array",
+  items: { type: "string" },
+  description: "Test point UUIDs (see list_test_suite_test_points / search_test_points). Must not be empty.",
+} as const;
+
+/**
+ * TestIT applies tester/selection endpoints to ALL points of the plan when the
+ * selection is empty (verified live), so an explicit non-empty list is required.
+ */
+function requirePointIds(args: ToolArgs): string[] {
+  const ids = getOptionalStringArray(args, "testPointIds");
+  if (!ids || ids.length === 0) {
+    throw new Error('"testPointIds" must be a non-empty array of test point UUIDs.');
+  }
+  return ids;
+}
 
 const idOnly = (description: string) => ({
   type: "object" as const,
@@ -125,6 +144,68 @@ export function createTestPlanTools(
       description: "Permanently delete an archived test plan. Irreversible; delete (archive) it first.",
       inputSchema: idOnly("Test plan UUID."),
     },
+    {
+      name: "assign_test_points_tester",
+      description:
+        "Assign a tester (user UUID) to the given test points of a test plan. TestIT has no user list API: " +
+        "take user ids from existing entities (createdById, testerId). Returns the affected point ids.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Test plan UUID." },
+          userId: { type: "string", description: "Tester user UUID." },
+          testPointIds: TEST_POINT_IDS,
+        },
+        required: ["id", "userId", "testPointIds"],
+      },
+    },
+    {
+      name: "unassign_test_points_tester",
+      description: "Remove the tester from the given test points of a test plan. Returns the affected point ids.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Test plan UUID." },
+          testPointIds: TEST_POINT_IDS,
+        },
+        required: ["id", "testPointIds"],
+      },
+    },
+    {
+      name: "reset_test_points",
+      description: "Reset the given test points of a test plan back to NoResults (their results are discarded).",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Test plan UUID." },
+          testPointIds: TEST_POINT_IDS,
+        },
+        required: ["id", "testPointIds"],
+      },
+    },
+    {
+      name: "get_test_plan_summary",
+      description:
+        "Test plan totals: test points (total/manual/automated/completed), defects, planned and spent duration.",
+      inputSchema: idOnly("Test plan UUID."),
+    },
+    {
+      name: "list_test_plan_configurations",
+      description: "Configurations used by the test points of a test plan.",
+      inputSchema: idOnly("Test plan UUID."),
+    },
+    {
+      name: "get_test_plan_history",
+      description: "Change history of a test plan.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Test plan UUID." },
+          ...PAGINATION_PROPERTIES,
+        },
+        required: ["id"],
+      },
+    },
   ];
 
   const handlers = {
@@ -201,6 +282,35 @@ export function createTestPlanTools(
     purge_test_plan: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
       return api.purgeTestPlan(client, getRequiredString(args, "id"));
+    },
+    assign_test_points_tester: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.assignTestPointsTester(
+        client,
+        getRequiredString(args, "id"),
+        getRequiredString(args, "userId"),
+        requirePointIds(args),
+      );
+    },
+    unassign_test_points_tester: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.unassignTestPointsTester(client, getRequiredString(args, "id"), requirePointIds(args));
+    },
+    reset_test_points: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.resetTestPoints(client, getRequiredString(args, "id"), requirePointIds(args));
+    },
+    get_test_plan_summary: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.getTestPlanSummary(client, getRequiredString(args, "id"));
+    },
+    list_test_plan_configurations: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.listTestPlanConfigurations(client, getRequiredString(args, "id"));
+    },
+    get_test_plan_history: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.getTestPlanHistory(client, getRequiredString(args, "id"), pickPagination(args));
     },
   };
 

@@ -63,3 +63,41 @@ export function listTestPlanTestRuns(
 ): Promise<unknown> {
   return client.get(`/api/v2/testPlans/${id}/testRuns`, query);
 }
+
+/** Points selected by explicit ids; an empty selection would hit ALL points of the plan. */
+function selectPoints(testPointIds: string[]): Record<string, unknown> {
+  return { extractionModel: { ids: { include: testPointIds } } };
+}
+
+export function assignTestPointsTester(
+  client: TestITApiClient,
+  id: string,
+  userId: string,
+  testPointIds: string[],
+): Promise<unknown> {
+  return client.post(`/api/v2/testPlans/${id}/testPoints/tester/${userId}`, selectPoints(testPointIds));
+}
+
+export function unassignTestPointsTester(
+  client: TestITApiClient,
+  id: string,
+  testPointIds: string[],
+): Promise<unknown> {
+  return client.delete(`/api/v2/testPlans/${id}/testPoints/tester`, undefined, selectPoints(testPointIds));
+}
+
+export function resetTestPoints(client: TestITApiClient, id: string, testPointIds: string[]): Promise<unknown> {
+  return client.post(`/api/v2/testPlans/${id}/testPoints/reset`, testPointIds);
+}
+
+export function getTestPlanSummary(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.get(`/api/v2/testPlans/${id}/summaries`);
+}
+
+export function listTestPlanConfigurations(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.get(`/api/v2/testPlans/${id}/configurations`);
+}
+
+export function getTestPlanHistory(client: TestITApiClient, id: string, query: QueryParams): Promise<unknown> {
+  return client.get(`/api/v2/testPlans/${id}/history`, query);
+}

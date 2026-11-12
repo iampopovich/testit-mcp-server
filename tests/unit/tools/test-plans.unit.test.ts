@@ -57,3 +57,37 @@ describe("test plan tools", () => {
     expect(definedQuery(client.calls[3].query)).toEqual({ completed: true, Take: 5 });
   });
 });
+
+describe("test plan testers, reset and reports", () => {
+  it("assign/unassign send an explicit include selection", async () => {
+    const { client, call } = setup();
+    await call("assign_test_points_tester", { id: "tp", userId: "u1", testPointIds: ["p1"] });
+    await call("unassign_test_points_tester", { id: "tp", testPointIds: ["p1"] });
+    const selection = { extractionModel: { ids: { include: ["p1"] } } };
+    expect(client.calls[0]).toMatchObject({ method: "POST", path: "/api/v2/testPlans/tp/testPoints/tester/u1", body: selection });
+    expect(client.calls[1]).toMatchObject({ method: "DELETE", path: "/api/v2/testPlans/tp/testPoints/tester", body: selection });
+  });
+
+  it("refuses empty point lists (TestIT would apply to ALL points)", async () => {
+    const { client, call } = setup();
+    for (const name of ["assign_test_points_tester", "unassign_test_points_tester", "reset_test_points"]) {
+      await expect(call(name, { id: "tp", userId: "u1", testPointIds: [] })).rejects.toThrow('"testPointIds" must be a non-empty');
+    }
+    expect(client.calls).toHaveLength(0);
+  });
+
+  it("reset, summary, configurations, history hit the right endpoints", async () => {
+    const { client, call } = setup();
+    await call("reset_test_points", { id: "tp", testPointIds: ["p1"] });
+    await call("get_test_plan_summary", { id: "tp" });
+    await call("list_test_plan_configurations", { id: "tp" });
+    await call("get_test_plan_history", { id: "tp", take: 3 });
+    expect(client.calls.map((c) => `${c.method} ${c.path}`)).toEqual([
+      "POST /api/v2/testPlans/tp/testPoints/reset",
+      "GET /api/v2/testPlans/tp/summaries",
+      "GET /api/v2/testPlans/tp/configurations",
+      "GET /api/v2/testPlans/tp/history",
+    ]);
+    expect(client.calls[0].body).toEqual(["p1"]);
+  });
+});
