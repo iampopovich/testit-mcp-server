@@ -5,6 +5,7 @@ import { createConfigurationTools } from "./tools/configurations.js";
 import { createTestRunTools } from "./tools/test-runs.js";
 import { createSharedStepTools } from "./tools/shared-steps.js";
 import { createWorkItemTools } from "./tools/work-items.js";
+import { createSectionTools } from "./tools/sections.js";
 import { createTestPlanTools } from "./tools/test-plans.js";
 import { createTestResultTools } from "./tools/test-results.js";
 import { annotationsFor } from "./tools/annotations.js";
@@ -29,6 +30,7 @@ export function buildToolBundles(client: TestITApiClient): NamedToolBundle[] {
   return [
     { category: "Projects", toolset: "projects", ...createProjectTools(client) },
     { category: "Work Items", toolset: "work-items", ...createWorkItemTools(client) },
+    { category: "Sections", toolset: "sections", ...createSectionTools(client) },
     { category: "Test Runs", toolset: "test-runs", ...createTestRunTools(client) },
     { category: "Test Results", toolset: "test-results", ...createTestResultTools(client) },
     { category: "Test Plans", toolset: "test-plans", ...createTestPlanTools(client) },

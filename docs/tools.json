@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T07:55:19.114Z",
-  "totalTools": 46,
+  "generatedAt": "2026-11-12T08:12:09.477Z",
+  "totalTools": 52,
   "categories": [
     {
       "name": "Projects",
@@ -798,6 +798,234 @@
             "readOnlyHint": false,
             "destructiveHint": false,
             "idempotentHint": false,
+            "openWorldHint": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sections",
+      "toolset": "sections",
+      "tools": [
+        {
+          "name": "list_sections",
+          "description": "List all sections (folders) of a project as a flat list with parentId. The root section has parentId=null. Use section IDs as sectionId when creating work items.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string"
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_section",
+          "description": "Get a section with its precondition/postcondition steps.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Section UUID."
+              },
+              "isDeleted": {
+                "type": "boolean",
+                "description": "Set true to read an archived section."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "create_section",
+          "description": "Create a section. parentId defaults to the project's root section (TestIT rejects parentId=null).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "parentId": {
+                "type": "string",
+                "description": "Parent section UUID (default: root section)."
+              },
+              "preconditionSteps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "action": {
+                      "type": "string"
+                    },
+                    "expected": {
+                      "type": "string"
+                    },
+                    "testData": {
+                      "type": "string"
+                    },
+                    "comments": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "postconditionSteps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "action": {
+                      "type": "string"
+                    },
+                    "expected": {
+                      "type": "string"
+                    },
+                    "testData": {
+                      "type": "string"
+                    },
+                    "comments": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "rename_section",
+          "description": "Rename a section.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Section UUID."
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "move_section",
+          "description": "Move a section (with its work items and subsections) under another parent. Optionally place it before nextSectionId.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Section UUID to move."
+              },
+              "parentId": {
+                "type": "string",
+                "description": "New parent section UUID."
+              },
+              "nextSectionId": {
+                "type": "string",
+                "description": "Sibling to insert before (optional)."
+              }
+            },
+            "required": [
+              "id",
+              "parentId"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_section",
+          "description": "Delete (archive) a section together with its subsections and work items.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Section UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
             "openWorldHint": true
           }
         }

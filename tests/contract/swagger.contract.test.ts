@@ -9,7 +9,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildToolRegistry } from "../../src/server-bootstrap.js";
-import { createRecordingClient, definedQuery, sampleArgs } from "../unit/tool-test-helpers.js";
+import { createRecordingClient, definedQuery, SAMPLE_UUID, sampleArgs } from "../unit/tool-test-helpers.js";
 
 interface SpecOperation {
   deprecated?: boolean;
@@ -24,11 +24,19 @@ const specAvailable = Boolean(specPath && existsSync(specPath));
  * Known contract violations still to be fixed. Each fix iteration removes
  * entries; the test fails if an entry is no longer needed (stale allowlist).
  */
-const KNOWN_VIOLATIONS: Record<string, string> = {};
+const KNOWN_VIOLATIONS: Record<string, string> = {
+  delete_section: "DELETE /sections/{id} is deprecated but has no replacement in the API",
+};
 
 /** Extra args for tools that need more than their required fields to make a call. */
 const EXTRA_ARGS: Record<string, Record<string, unknown>> = {
   set_test_result: { comment: "x" },
+};
+
+/** Canned responses for tools that read before they write ("METHOD path" -> body). */
+const PRESET_RESPONSES: Record<string, Record<string, unknown>> = {
+  create_section: { [`GET /api/v2/projects/${SAMPLE_UUID}/sections`]: [{ id: "root", parentId: null }] },
+  move_section: { [`GET /api/v2/sections/${SAMPLE_UUID}`]: { id: SAMPLE_UUID, parentId: "old-parent" } },
 };
 
 function findTemplate(paths: SpecPaths, method: string, path: string): string | undefined {
@@ -74,6 +82,9 @@ describe.skipIf(!specAvailable)("contract: tools vs TestIT OpenAPI spec", () => 
   for (const tool of tools) {
     it(tool.name, async () => {
       const client = createRecordingClient();
+      for (const [key, value] of Object.entries(PRESET_RESPONSES[tool.name] ?? {})) {
+        client.responses.set(key, value);
+      }
       const { handlers } = buildToolRegistry(client as never);
       const args = { ...sampleArgs(tool.inputSchema), ...EXTRA_ARGS[tool.name] };
       // Exercise advertised paging params so unsupported ones get caught.
