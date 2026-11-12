@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it } from "vitest";
-import { callSafe, callTool, integrationEnabled, uniqueName } from "./setup.js";
+import { callTool, integrationEnabled, removeTestRun, uniqueName } from "./setup.js";
 
 interface TestRun {
   id: string;
@@ -13,7 +13,7 @@ describe.skipIf(!integrationEnabled)("integration: test run lifecycle", () => {
   let run: TestRun | undefined;
 
   afterAll(async () => {
-    await callSafe("delete_test_run", { id: run?.id });
+    await removeTestRun(run?.id);
   });
 
   it("create -> start -> complete, visible in list_test_runs by state", async () => {
@@ -32,5 +32,15 @@ describe.skipIf(!integrationEnabled)("integration: test run lifecycle", () => {
 
     const notStarted = await callTool<TestRun[]>("list_test_runs", { notStarted: true, take: 200 });
     expect(notStarted.map((r) => r.id)).not.toContain(run.id);
+  });
+
+  it("delete -> restore -> delete -> purge", async () => {
+    const temp = await callTool<TestRun>("create_test_run", { name: uniqueName("run-temp") });
+    await callTool("delete_test_run", { id: temp.id });
+    await callTool("restore_test_run", { id: temp.id });
+    expect((await callTool<TestRun>("get_test_run", { id: temp.id })).id).toBe(temp.id);
+    await callTool("delete_test_run", { id: temp.id });
+    await callTool("purge_test_run", { id: temp.id });
+    await expect(callTool("get_test_run", { id: temp.id })).rejects.toThrow("(404)");
   });
 });

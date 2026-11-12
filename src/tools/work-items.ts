@@ -205,7 +205,17 @@ export function createWorkItemTools(
     },
     {
       name: "restore_work_item",
-      description: "Restore a deleted work item by ID.",
+      description: "Restore an archived (deleted) work item by ID.",
+      inputSchema: {
+        type: "object" as const,
+        properties: { id: { type: "string", description: "Work item UUID." } },
+        required: ["id"],
+      },
+    },
+    {
+      name: "purge_work_item",
+      description:
+        "Permanently delete an archived work item. Irreversible; the item must be deleted (archived) first.",
       inputSchema: {
         type: "object" as const,
         properties: { id: { type: "string", description: "Work item UUID." } },
@@ -290,6 +300,10 @@ export function createWorkItemTools(
     restore_work_item: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
       return api.restoreWorkItem(client, getRequiredId(args) as string);
+    },
+    purge_work_item: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.purgeWorkItem(client, getRequiredId(args) as string);
     },
     upload_work_item_attachment: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

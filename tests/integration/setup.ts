@@ -72,3 +72,16 @@ export async function callSafe(name: string, args: ToolArgs = {}): Promise<void>
 export function uniqueName(prefix: string): string {
   return `mcp-it-${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 }
+
+/** Cleanup helpers: archive then purge so test data does not pile up in the archive. */
+export async function removeWorkItem(id: string | undefined): Promise<void> {
+  if (!id) return;
+  await callSafe("delete_work_item", { id });
+  await callSafe("purge_work_item", { id });
+}
+
+export async function removeTestRun(id: string | undefined): Promise<void> {
+  if (!id) return;
+  await callSafe("delete_test_run", { id });
+  await callSafe("purge_test_run", { id });
+}

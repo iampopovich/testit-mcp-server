@@ -38,6 +38,14 @@ export function deleteTestRun(client: TestITApiClient, id: string): Promise<unkn
   return client.delete(`/api/v2/testRuns/${id}`);
 }
 
+export function restoreTestRun(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.post(`/api/v2/testRuns/${id}/restore`);
+}
+
+export function purgeTestRun(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.post(`/api/v2/testRuns/${id}/purge`);
+}
+
 export function getTestRunTestResults(
   client: TestITApiClient,
   id: string,

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { callSafe, callTool, getProjectId, integrationEnabled, uniqueName } from "./setup.js";
+import { callTool, getProjectId, integrationEnabled, removeWorkItem, uniqueName } from "./setup.js";
 
 interface WorkItem {
   id: string;
@@ -28,8 +28,24 @@ describe.skipIf(!integrationEnabled)("integration: work items listing", () => {
   });
 
   afterAll(async () => {
-    await callSafe("delete_work_item", { id: testCase?.id });
-    await callSafe("delete_work_item", { id: sharedStep?.id });
+    await removeWorkItem(testCase?.id);
+    await removeWorkItem(sharedStep?.id);
+  });
+
+  it("delete -> restore -> delete -> purge removes the item for good", async () => {
+    const temp = await callTool<WorkItem>("create_work_item", { name: `${prefix}-temp` });
+    await callTool("delete_work_item", { id: temp.id });
+    const archived = await callTool<WorkItem[]>("list_work_items", { name: `${prefix}-temp`, isDeleted: true });
+    expect(archived.map((w) => w.id)).toEqual([temp.id]);
+
+    await callTool("restore_work_item", { id: temp.id });
+    expect((await callTool<WorkItem[]>("list_work_items", { name: `${prefix}-temp` })).map((w) => w.id)).toEqual([
+      temp.id,
+    ]);
+
+    await callTool("delete_work_item", { id: temp.id });
+    await callTool("purge_work_item", { id: temp.id });
+    await expect(callTool("get_work_item", { id: temp.id })).rejects.toThrow("(404)");
   });
 
   it("create_work_item applies defaults and typed tags into the project", async () => {

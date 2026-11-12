@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T07:48:35.601Z",
-  "totalTools": 43,
+  "generatedAt": "2026-11-12T07:49:42.727Z",
+  "totalTools": 46,
   "categories": [
     {
       "name": "Projects",
@@ -652,7 +652,23 @@
         },
         {
           "name": "restore_work_item",
-          "description": "Restore a deleted work item by ID.",
+          "description": "Restore an archived (deleted) work item by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Work item UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "purge_work_item",
+          "description": "Permanently delete an archived work item. Irreversible; the item must be deleted (archived) first.",
           "inputSchema": {
             "type": "object",
             "properties": {
@@ -873,7 +889,39 @@
         },
         {
           "name": "delete_test_run",
-          "description": "Delete a test run by ID.",
+          "description": "Delete (archive) a test run by ID. Use restore_test_run to undo or purge_test_run to remove permanently.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test run UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "restore_test_run",
+          "description": "Restore an archived (deleted) test run.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test run UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "purge_test_run",
+          "description": "Permanently delete an archived test run. Irreversible; delete (archive) it first.",
           "inputSchema": {
             "type": "object",
             "properties": {

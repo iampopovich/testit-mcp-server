@@ -92,7 +92,25 @@ export function createTestRunTools(
     },
     {
       name: "delete_test_run",
-      description: "Delete a test run by ID.",
+      description: "Delete (archive) a test run by ID. Use restore_test_run to undo or purge_test_run to remove permanently.",
+      inputSchema: {
+        type: "object" as const,
+        properties: { id: { type: "string", description: "Test run UUID." } },
+        required: ["id"],
+      },
+    },
+    {
+      name: "restore_test_run",
+      description: "Restore an archived (deleted) test run.",
+      inputSchema: {
+        type: "object" as const,
+        properties: { id: { type: "string", description: "Test run UUID." } },
+        required: ["id"],
+      },
+    },
+    {
+      name: "purge_test_run",
+      description: "Permanently delete an archived test run. Irreversible; delete (archive) it first.",
       inputSchema: {
         type: "object" as const,
         properties: { id: { type: "string", description: "Test run UUID." } },
@@ -163,6 +181,14 @@ export function createTestRunTools(
     delete_test_run: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
       return api.deleteTestRun(client, getRequiredId(args) as string);
+    },
+    restore_test_run: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.restoreTestRun(client, getRequiredId(args) as string);
+    },
+    purge_test_run: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.purgeTestRun(client, getRequiredId(args) as string);
     },
     get_test_run_results: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

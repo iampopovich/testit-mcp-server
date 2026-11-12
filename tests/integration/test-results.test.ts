@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { callSafe, callTool, getClient, getProjectId, integrationEnabled, uniqueName } from "./setup.js";
+import { callTool, getClient, getProjectId, integrationEnabled, removeTestRun, uniqueName } from "./setup.js";
 
 interface TestResult {
   id: string;
@@ -28,7 +28,7 @@ describe.skipIf(!integrationEnabled)("integration: test results", () => {
   });
 
   afterAll(async () => {
-    await callSafe("delete_test_run", { id: runId });
+    await removeTestRun(runId);
     if (autoTestId) {
       await getClient().delete(`/api/v2/autoTests/${autoTestId}`).catch(() => undefined);
     }

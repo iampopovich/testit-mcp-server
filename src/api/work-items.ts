@@ -62,6 +62,10 @@ export function restoreWorkItem(client: TestITApiClient, id: string): Promise<un
   return client.post(`/api/v2/workItems/${id}/restore`);
 }
 
+export function purgeWorkItem(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.post(`/api/v2/workItems/${id}/purge`);
+}
+
 export async function uploadWorkItemAttachment(
   client: TestITApiClient,
   id: string,
