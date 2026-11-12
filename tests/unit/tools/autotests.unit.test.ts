@@ -36,7 +36,7 @@ describe("autotest tools", () => {
     await call("search_autotests", { projectId: "p1", externalIds: ["x"], includes: { includeSteps: true }, take: 3 });
     expect(client.calls[0]).toMatchObject({ method: "POST", path: "/api/v2/autoTests/search" });
     expect(client.calls[0].body).toEqual({
-      filter: { projectIds: ["p1"], externalIds: ["x"] },
+      filter: { projectIds: ["p1"], externalIds: ["x"], isDeleted: false },
       includes: { includeSteps: true },
     });
     expect(definedQuery(client.calls[0].query)).toEqual({ Take: 3 });

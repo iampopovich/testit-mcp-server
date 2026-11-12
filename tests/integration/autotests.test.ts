@@ -46,6 +46,15 @@ describe.skipIf(!integrationEnabled)("integration: autotests and plan-based runs
     expect(linked.map((w) => w.id)).toEqual([workItemId]);
   });
 
+  it("delete_autotest archives: get -> 404, search finds it only with isDeleted=true", async () => {
+    const temp = await callTool<AutoTest>("create_autotest", { externalId: `${prefix}-tmp`, name: `${prefix} tmp` });
+    await callTool("delete_autotest", { id: temp.id });
+    await expect(callTool("get_autotest", { id: temp.id })).rejects.toThrow("(404)");
+    expect(await callTool<AutoTest[]>("search_autotests", { externalIds: [temp.externalId] })).toEqual([]);
+    const archived = await callTool<AutoTest[]>("search_autotests", { externalIds: [temp.externalId], isDeleted: true });
+    expect(archived.map((a) => a.id)).toEqual([temp.id]);
+  });
+
   it("plan run from automated work items: submit result -> test point Passed, run Completed", async () => {
     planId = (await callTool<{ id: string }>("create_test_plan", { name: `${prefix}-plan` })).id;
     const suite = await callTool<{ id: string }>("create_test_suite", { testPlanId: planId, name: "Auto" });

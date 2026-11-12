@@ -58,7 +58,10 @@ export function createAutoTestTools(client: TestITApiClient): ToolBundle {
           className: { type: "string" },
           tags: { type: "array", items: { type: "string" } },
           isFlaky: { type: "boolean" },
-          isDeleted: { type: "boolean" },
+          isDeleted: {
+            type: "boolean",
+            description: "Default false (active only). true = archived autotests.",
+          },
           filter: { type: "object", additionalProperties: true },
           includes: {
             type: "object",
@@ -107,7 +110,9 @@ export function createAutoTestTools(client: TestITApiClient): ToolBundle {
     },
     {
       name: "delete_autotest",
-      description: "Delete an autotest PERMANENTLY (no archive/restore for autotests).",
+      description:
+        "Delete (archive) an autotest. Archived autotests return 404 from get_autotest and can only be " +
+        "found via search_autotests with isDeleted=true; the API has no restore or purge for autotests.",
       inputSchema: idOnly("Autotest UUID."),
     },
     {
@@ -145,7 +150,7 @@ export function createAutoTestTools(client: TestITApiClient): ToolBundle {
           className: getOptionalString(args, "className"),
           tags: getOptionalStringArray(args, "tags"),
           isFlaky: getOptionalBoolean(args, "isFlaky"),
-          isDeleted: getOptionalBoolean(args, "isDeleted"),
+          isDeleted: getOptionalBoolean(args, "isDeleted") ?? (raw.isDeleted === undefined ? false : undefined),
         }),
       };
       const includes = getOptionalObjectPayload(args, "includes");

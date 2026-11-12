@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T08:32:55.454Z",
+  "generatedAt": "2026-11-12T08:33:47.596Z",
   "totalTools": 73,
   "categories": [
     {
@@ -2278,7 +2278,8 @@
                 "type": "boolean"
               },
               "isDeleted": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "Default false (active only). true = archived autotests."
               },
               "filter": {
                 "type": "object",
@@ -2459,7 +2460,7 @@
         },
         {
           "name": "delete_autotest",
-          "description": "Delete an autotest PERMANENTLY (no archive/restore for autotests).",
+          "description": "Delete (archive) an autotest. Archived autotests return 404 from get_autotest and can only be found via search_autotests with isDeleted=true; the API has no restore or purge for autotests.",
           "inputSchema": {
             "type": "object",
             "properties": {
