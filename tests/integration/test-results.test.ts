@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { callSafe, callTool, integrationEnabled, removeTestRun, uniqueName } from "./setup.js";
+import { callSafe, callTool, getDefaultConfigurationId, integrationEnabled, removeTestRun, uniqueName } from "./setup.js";
 
 interface TestResult {
   id: string;
@@ -17,8 +17,7 @@ describe.skipIf(!integrationEnabled)("integration: test results", () => {
   beforeAll(async () => {
     // An autotest is required to submit results into a run.
     autoTestId = (await callTool<{ id: string }>("create_autotest", { externalId, name: externalId })).id;
-    const configurations = await callTool<Array<{ id: string }>>("list_configurations", {});
-    configurationId = configurations[0].id;
+    configurationId = await getDefaultConfigurationId();
     runId = (await callTool<{ id: string }>("create_test_run", { name: uniqueName("results") })).id;
   });
 

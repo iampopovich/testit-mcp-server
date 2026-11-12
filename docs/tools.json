@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T08:33:47.596Z",
-  "totalTools": 73,
+  "generatedAt": "2026-11-12T08:38:34.101Z",
+  "totalTools": 80,
   "categories": [
     {
       "name": "Projects",
@@ -1495,7 +1495,7 @@
               },
               "statusCode": {
                 "type": "string",
-                "description": "Status code, e.g. PASSED, FAILED, BLOCKED, SKIPPED (see test statuses)."
+                "description": "Status code, e.g. PASSED, FAILED, BLOCKED, SKIPPED (full list incl. custom: list_test_statuses)."
               },
               "comment": {
                 "type": "string"
@@ -1606,7 +1606,7 @@
                     },
                     "statusCode": {
                       "type": "string",
-                      "description": "e.g. Passed, Failed, Skipped, Blocked."
+                      "description": "e.g. Passed, Failed, Skipped, Blocked (see list_test_statuses)."
                     },
                     "outcome": {
                       "type": "string",
@@ -2780,7 +2780,7 @@
       "tools": [
         {
           "name": "list_configurations",
-          "description": "List configurations for a project.",
+          "description": "List configurations for a project. Every project has a default one (\"Any\"); test points and results are always bound to a configuration.",
           "inputSchema": {
             "type": "object",
             "properties": {
@@ -2804,7 +2804,8 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": "string",
+                "description": "Configuration UUID."
               }
             },
             "required": [
@@ -2818,17 +2819,41 @@
         },
         {
           "name": "create_configuration",
-          "description": "Create a new configuration.",
+          "description": "Create a configuration (environment such as browser/OS). Extra ConfigurationPostModel fields can go into \"payload\".",
           "inputSchema": {
             "type": "object",
             "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Key/value parameters, e.g. {\"browser\": \"firefox\", \"os\": \"linux\"}."
+              },
+              "isDefault": {
+                "type": "boolean",
+                "description": "Make it the project's default (default false)."
+              },
               "payload": {
                 "type": "object",
                 "additionalProperties": true
               }
             },
             "required": [
-              "payload"
+              "name"
             ]
           },
           "annotations": {
@@ -2839,8 +2864,46 @@
           }
         },
         {
+          "name": "set_configuration",
+          "description": "Partially update a configuration: only the given fields change (JSON Patch). Prefer this over update_configuration.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Configuration UUID."
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Replaces the whole parameters map."
+              },
+              "isDefault": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
           "name": "update_configuration",
-          "description": "Update an existing configuration.",
+          "description": "Replace a configuration (PUT, ConfigurationPutModel with id). Fields not sent are cleared; use set_configuration for partial changes.",
           "inputSchema": {
             "type": "object",
             "properties": {
@@ -2857,6 +2920,159 @@
             "readOnlyHint": false,
             "destructiveHint": true,
             "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_configuration",
+          "description": "Delete (archive) a configuration. Use restore_configuration to undo or purge_configuration to remove it for good.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Configuration UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "restore_configuration",
+          "description": "Restore an archived configuration.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Configuration UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "purge_configuration",
+          "description": "Permanently delete an archived configuration. Irreversible; delete (archive) it first.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Configuration UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dictionaries",
+      "toolset": "dictionaries",
+      "tools": [
+        {
+          "name": "list_test_statuses",
+          "description": "List test result statuses (system and custom): code, name, type. Use \"code\" as statusCode in submit_test_run_results / set_test_result (codes are case-insensitive, e.g. PASSED, FAILED, BLOCKED).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_tags",
+          "description": "List tags. With projectId/projectName: tags used by that project's work items (plain names). Without: all tags in the instance (search with searchValue).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string"
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Substring of the tag name (instance-wide mode)."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_project_attributes",
+          "description": "List custom attributes of a project (id, name, type, isRequired, options). Use attribute ids as keys of \"attributes\" when creating work items or test plans.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string"
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "isDeleted": {
+                "type": "boolean"
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
             "openWorldHint": true
           }
         }

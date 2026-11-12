@@ -73,6 +73,19 @@ export function uniqueName(prefix: string): string {
   return `mcp-it-${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 }
 
+/**
+ * The project's default configuration. Test files run in parallel and some create
+ * temporary configurations, so never take "the first one" from the list.
+ */
+export async function getDefaultConfigurationId(): Promise<string> {
+  const configurations = await callTool<Array<{ id: string; isDefault: boolean }>>("list_configurations", {});
+  const found = configurations.find((c) => c.isDefault);
+  if (!found) {
+    throw new Error("Project has no default configuration.");
+  }
+  return found.id;
+}
+
 /** Cleanup helpers: archive then purge so test data does not pile up in the archive. */
 export async function removeWorkItem(id: string | undefined): Promise<void> {
   if (!id) return;

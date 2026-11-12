@@ -31,6 +31,7 @@ const KNOWN_VIOLATIONS: Record<string, string> = {
 /** Extra args for tools that need more than their required fields to make a call. */
 const EXTRA_ARGS: Record<string, Record<string, unknown>> = {
   set_test_result: { comment: "x" },
+  set_configuration: { name: "x" },
 };
 
 /** Canned responses for tools that read before they write ("METHOD path" -> body). */

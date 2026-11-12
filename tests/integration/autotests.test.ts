@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { callSafe, callTool, integrationEnabled, removeTestRun, removeWorkItem, uniqueName } from "./setup.js";
+import { callSafe, callTool, getDefaultConfigurationId, integrationEnabled, removeTestRun, removeWorkItem, uniqueName } from "./setup.js";
 
 interface AutoTest {
   id: string;
@@ -21,7 +21,7 @@ describe.skipIf(!integrationEnabled)("integration: autotests and plan-based runs
 
   beforeAll(async () => {
     workItemId = (await callTool<{ id: string }>("create_work_item", { name: `${prefix}-case`, state: "Ready" })).id;
-    configurationId = (await callTool<Array<{ id: string }>>("list_configurations", {}))[0].id;
+    configurationId = await getDefaultConfigurationId();
   });
 
   afterAll(async () => {

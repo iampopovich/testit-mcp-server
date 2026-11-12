@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { callSafe, callTool, integrationEnabled, removeWorkItem, uniqueName } from "./setup.js";
+import { callSafe, callTool, getDefaultConfigurationId, integrationEnabled, removeWorkItem, uniqueName } from "./setup.js";
 
 interface Suite {
   id: string;
@@ -41,8 +41,8 @@ describe.skipIf(!integrationEnabled)("integration: test suites and test points",
     expect(tree[0].children?.map((s) => s.name)).toEqual(["Login"]);
     expect((await callTool<Suite>("get_test_suite", { id: sub.id })).parentId).toBe(suite.id);
 
-    const [configuration] = await callTool<Array<{ id: string }>>("list_configurations", {});
-    await callTool("set_test_suite_configurations", { id: suite.id, configurationIds: [configuration.id] });
+    const configurationId = await getDefaultConfigurationId();
+    await callTool("set_test_suite_configurations", { id: suite.id, configurationIds: [configurationId] });
 
     await callTool("set_test_suite_work_items", { id: suite.id, workItemIds });
     let points = await callTool<TestPoint[]>("list_test_suite_test_points", { id: suite.id });

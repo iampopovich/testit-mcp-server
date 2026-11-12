@@ -24,7 +24,7 @@ function compact(obj: Record<string, unknown>): Record<string, unknown> {
 const PATCHABLE_FIELDS = {
   statusCode: {
     type: "string",
-    description: "Status code, e.g. PASSED, FAILED, BLOCKED, SKIPPED (see test statuses).",
+    description: "Status code, e.g. PASSED, FAILED, BLOCKED, SKIPPED (full list incl. custom: list_test_statuses).",
   },
   comment: { type: "string" },
   message: { type: "string", description: "Failure/info message." },
@@ -143,7 +143,7 @@ export function createTestResultTools(
               properties: {
                 autoTestExternalId: { type: "string" },
                 configurationId: { type: "string" },
-                statusCode: { type: "string", description: "e.g. Passed, Failed, Skipped, Blocked." },
+                statusCode: { type: "string", description: "e.g. Passed, Failed, Skipped, Blocked (see list_test_statuses)." },
                 outcome: { type: "string", enum: [...OUTCOMES] },
                 message: { type: "string" },
                 traces: { type: "string" },
