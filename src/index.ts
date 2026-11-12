@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 
+import { createRequire } from "node:module";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { TokenManager } from "./auth.js";
 import { TestITApiClient } from "./client.js";
 import { buildToolRegistry, isTruthyEnv, parseListEnv, requiredEnv } from "./server-bootstrap.js";
+
+// package.json sits one level above both src/ (tsx) and dist/ (build).
+const { version: SERVER_VERSION } = createRequire(import.meta.url)("../package.json") as { version: string };
 
 function formatToolResult(result: unknown): string {
   if (result === undefined) {
@@ -38,7 +42,7 @@ async function main(): Promise<void> {
   });
 
   const server = new Server(
-    { name: "testit-mcp-server", version: "0.1.0" },
+    { name: "testit-mcp-server", version: SERVER_VERSION },
     { capabilities: { tools: {} } },
   );
 
