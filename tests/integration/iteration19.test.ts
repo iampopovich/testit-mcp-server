@@ -19,7 +19,8 @@ describe.skipIf(!integrationEnabled)("integration: project patch, autotest patch
 
   afterAll(async () => {
     await callSafe("delete_autotest", { id: autoTestId });
-    for (const id of created) {
+    // Reverse order: a shared step cannot be deleted while a case still references it.
+    for (const id of [...created].reverse()) {
       await removeWorkItem(id);
     }
   });
