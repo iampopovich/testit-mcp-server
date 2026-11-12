@@ -2,15 +2,7 @@ import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { createAnalyticTools } from "../src/tools/analytic.js";
-import { createDashboardTools } from "../src/tools/dashboards.js";
-import { createDefectTools } from "../src/tools/defects.js";
-import { createEnvironmentTools } from "../src/tools/environments.js";
-import { createLaunchTools } from "../src/tools/launches.js";
-import { createSharedStepTools } from "../src/tools/shared-steps.js";
-import { createTestCaseTools } from "../src/tools/test-cases.js";
-import { createTestPlanTools } from "../src/tools/test-plans.js";
-import { createTestResultTools } from "../src/tools/test-results.js";
+import { buildToolBundles } from "../src/server-bootstrap.js";
 import type { McpToolDefinition } from "../src/tools/types.js";
 
 interface ToolCategory {
@@ -34,17 +26,10 @@ function buildCatalog(): ToolCatalog {
     },
   );
 
-  const categories: ToolCategory[] = [
-    { name: "Test Cases", tools: createTestCaseTools(noopClient as never).tools },
-    { name: "Launches", tools: createLaunchTools(noopClient as never).tools },
-    { name: "Test Results", tools: createTestResultTools(noopClient as never).tools },
-    { name: "Test Plans", tools: createTestPlanTools(noopClient as never).tools },
-    { name: "Analytics", tools: createAnalyticTools(noopClient as never).tools },
-    { name: "Dashboards", tools: createDashboardTools(noopClient as never).tools },
-    { name: "Defects", tools: createDefectTools(noopClient as never).tools },
-    { name: "Shared Steps", tools: createSharedStepTools(noopClient as never).tools },
-    { name: "Environments", tools: createEnvironmentTools(noopClient as never).tools },
-  ];
+  const categories: ToolCategory[] = buildToolBundles(noopClient as never).map((bundle) => ({
+    name: bundle.category,
+    tools: bundle.tools,
+  }));
 
   const totalTools = categories.reduce((acc, category) => acc + category.tools.length, 0);
 
@@ -64,4 +49,3 @@ async function main(): Promise<void> {
 }
 
 await main();
-

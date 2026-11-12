@@ -49,6 +49,9 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Local analysis artifacts
+.local/
+
 # AI assistant folders
 _bmad/
 _bmad-*/

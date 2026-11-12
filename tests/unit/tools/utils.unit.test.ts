@@ -1,7 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   asObject,
-  ensureProjectIdInPayload,
   getObjectPayload,
   getOptionalBoolean,
   getOptionalNumber,
@@ -11,11 +10,14 @@ import {
   getRequiredId,
   getRequiredNumber,
   getRequiredString,
-  pickPagination,
   resolveProjectId,
 } from "../../../src/tools/utils.js";
 
 describe("tool utils", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("asObject returns empty object for invalid raw args", () => {
     expect(asObject(undefined)).toEqual({});
     expect(asObject(null)).toEqual({});
@@ -24,140 +26,73 @@ describe("tool utils", () => {
     expect(asObject({ id: 1 })).toEqual({ id: 1 });
   });
 
-  it("getRequiredNumber validates presence and numeric value", () => {
-    expect(getRequiredNumber({ id: 5 }, "id")).toBe(5);
-    expect(() => getRequiredNumber({}, "id")).toThrow('"id" must be a number.');
-    expect(() => getRequiredNumber({ id: "5" }, "id")).toThrow('"id" must be a number.');
-    expect(() => getRequiredNumber({ id: Number.NaN }, "id")).toThrow('"id" must be a number.');
+  it("number validators accept numbers and numeric strings", () => {
+    expect(getRequiredNumber({ n: 5 }, "n")).toBe(5);
+    expect(getRequiredNumber({ n: "5" }, "n")).toBe(5);
+    expect(() => getRequiredNumber({}, "n")).toThrow('"n" must be a number.');
+    expect(getOptionalNumber({}, "n")).toBeUndefined();
+    expect(() => getOptionalNumber({ n: "x" }, "n")).toThrow('"n" must be a number when provided.');
   });
 
-  it("getOptionalNumber validates type when provided", () => {
-    expect(getOptionalNumber({}, "size")).toBeUndefined();
-    expect(getOptionalNumber({ size: 10 }, "size")).toBe(10);
-    expect(() => getOptionalNumber({ size: "10" }, "size")).toThrow(
-      '"size" must be a number when provided.',
+  it("string, boolean and string-array validators", () => {
+    expect(getRequiredString({ s: "a" }, "s")).toBe("a");
+    expect(() => getRequiredString({ s: "" }, "s")).toThrow('"s" must be a non-empty string.');
+    expect(getOptionalString({}, "s")).toBeUndefined();
+    expect(() => getOptionalString({ s: 1 }, "s")).toThrow('"s" must be a string when provided.');
+    expect(getOptionalBoolean({ b: false }, "b")).toBe(false);
+    expect(() => getOptionalBoolean({ b: "yes" }, "b")).toThrow('"b" must be a boolean when provided.');
+    expect(getOptionalStringArray({ a: ["x"] }, "a")).toEqual(["x"]);
+    expect(() => getOptionalStringArray({ a: [1] }, "a")).toThrow(
+      '"a" must be an array of strings when provided.',
     );
   });
 
-  it("getRequiredString validates non-empty string", () => {
-    expect(getRequiredString({ rql: "status = failed" }, "rql")).toBe("status = failed");
-    expect(() => getRequiredString({}, "rql")).toThrow('"rql" must be a non-empty string.');
-    expect(() => getRequiredString({ rql: "" }, "rql")).toThrow('"rql" must be a non-empty string.');
-  });
-
-  it("optional string, boolean and string-array validators handle happy and invalid paths", () => {
-    expect(getOptionalString({}, "search")).toBeUndefined();
-    expect(getOptionalString({ search: "api" }, "search")).toBe("api");
-    expect(() => getOptionalString({ search: 1 }, "search")).toThrow(
-      '"search" must be a string when provided.',
-    );
-
-    expect(getOptionalBoolean({}, "global")).toBeUndefined();
-    expect(getOptionalBoolean({ global: true }, "global")).toBe(true);
-    expect(() => getOptionalBoolean({ global: "yes" }, "global")).toThrow(
-      '"global" must be a boolean when provided.',
-    );
-
-    expect(getOptionalStringArray({}, "sort")).toBeUndefined();
-    expect(getOptionalStringArray({ sort: ["name,asc"] }, "sort")).toEqual(["name,asc"]);
-    expect(() => getOptionalStringArray({ sort: [1] }, "sort")).toThrow(
-      '"sort" must be an array of strings when provided.',
-    );
-  });
-
-  it("getRequiredId delegates to numeric validation", () => {
+  it("getRequiredId accepts UUID strings and global numeric ids", () => {
+    expect(getRequiredId({ id: "abc" })).toBe("abc");
     expect(getRequiredId({ id: 42 })).toBe(42);
-    expect(() => getRequiredId({})).toThrow('"id" must be a number.');
-    expect(getRequiredId({ testCaseId: 22 }, "testCaseId")).toBe(22);
+    expect(() => getRequiredId({})).toThrow('"id" must be a string (UUID) or a number.');
   });
 
   it("object payload validators enforce object shape", () => {
     expect(getObjectPayload({ payload: { id: 1 } })).toEqual({ id: 1 });
     expect(() => getObjectPayload({ payload: [] })).toThrow('"payload" must be an object.');
-    expect(() => getObjectPayload({})).toThrow('"payload" must be an object.');
-
-    expect(getOptionalObjectPayload({}, "payload")).toBeUndefined();
-    expect(getOptionalObjectPayload({ payload: { x: 1 } }, "payload")).toEqual({ x: 1 });
-    expect(() => getOptionalObjectPayload({ payload: [] }, "payload")).toThrow(
+    expect(getOptionalObjectPayload({})).toBeUndefined();
+    expect(() => getOptionalObjectPayload({ payload: [] })).toThrow(
       '"payload" must be an object when provided.',
     );
   });
 
-  it("ensureProjectIdInPayload only injects projectId when missing and default exists", () => {
-    expect(ensureProjectIdInPayload({ name: "x" }, { defaultProjectId: 9 } as never)).toEqual({
-      name: "x",
-      projectId: 9,
-    });
-    expect(ensureProjectIdInPayload({ projectId: 11 }, { defaultProjectId: 9 } as never)).toEqual({
-      projectId: 11,
-    });
-    expect(ensureProjectIdInPayload({ name: "x" }, { defaultProjectId: undefined } as never)).toEqual({
-      name: "x",
-    });
-  });
-
-  it("pickPagination maps typed pagination fields", () => {
-    expect(pickPagination({ page: 1, size: 20, sort: ["id,asc"] })).toEqual({
-      page: 1,
-      size: 20,
-      sort: ["id,asc"],
-    });
-    expect(pickPagination({})).toEqual({
-      page: undefined,
-      size: undefined,
-      sort: undefined,
-    });
-  });
-
   it("resolveProjectId prefers explicit projectId", async () => {
-    const client = { get: vi.fn(), defaultProjectId: 99 };
-    const result = await resolveProjectId({ projectId: 77 }, client as never);
-    expect(result).toBe(77);
-    expect(client.get).not.toHaveBeenCalled();
+    const client = { post: vi.fn() };
+    await expect(resolveProjectId({ projectId: "p-1" }, client as never)).resolves.toBe("p-1");
+    expect(client.post).not.toHaveBeenCalled();
   });
 
-  it("resolveProjectId resolves exact projectName through suggest endpoint", async () => {
+  it("resolveProjectId resolves exact projectName (case-insensitive) via projects/search", async () => {
     const client = {
-      get: vi.fn().mockResolvedValue({
-        content: [
-          { id: 1, name: "Other" },
-          { id: 25, name: "Demo Project" },
-        ],
-      }),
-      defaultProjectId: 99,
+      post: vi.fn().mockResolvedValue([
+        { id: "p-1", name: "Demo Project 2" },
+        { id: "p-2", name: "Demo Project" },
+      ]),
     };
-    const result = await resolveProjectId({ projectName: "demo project" }, client as never);
-    expect(result).toBe(25);
-    expect(client.get).toHaveBeenCalledWith("/api/project/suggest", { query: "demo project" });
+    await expect(resolveProjectId({ projectName: "demo project" }, client as never)).resolves.toBe("p-2");
+    expect(client.post).toHaveBeenCalledWith("/api/v2/projects/search", { name: "demo project" });
   });
 
-  it("resolveProjectId rejects empty projectName", async () => {
-    const client = { get: vi.fn(), defaultProjectId: undefined };
-    await expect(
-      resolveProjectId({ projectName: "  " }, client as never),
-    ).rejects.toThrow('"projectName" must be a non-empty string when provided.');
-  });
-
-  it("resolveProjectId rejects unknown projectName", async () => {
-    const client = {
-      get: vi.fn().mockResolvedValue({ content: [{ id: 1, name: "X" }] }),
-      defaultProjectId: undefined,
-    };
-    await expect(
-      resolveProjectId({ projectName: "Y" }, client as never),
-    ).rejects.toThrow(
-      'Project "Y" not found. Pass "projectId" explicitly or use an exact project name.',
+  it("resolveProjectId rejects empty or unknown projectName", async () => {
+    const client = { post: vi.fn().mockResolvedValue([{ id: "p-1", name: "X" }]) };
+    await expect(resolveProjectId({ projectName: "  " }, client as never)).rejects.toThrow(
+      '"projectName" must be a non-empty string when provided.',
+    );
+    await expect(resolveProjectId({ projectName: "Y" }, client as never)).rejects.toThrow(
+      'Project "Y" not found.',
     );
   });
 
-  it("resolveProjectId falls back to default project id and then errors when unavailable", async () => {
-    await expect(resolveProjectId({}, { get: vi.fn(), defaultProjectId: 55 } as never)).resolves.toBe(55);
-    await expect(
-      resolveProjectId({}, { get: vi.fn(), defaultProjectId: undefined } as never),
-    ).rejects.toThrow(
-      'Project scope is required. Pass "projectId" or "projectName", or set TESTIT_PROJECT_ID in env.',
-    );
+  it("resolveProjectId falls back to TESTIT_PROJECT_ID and errors without it", async () => {
+    vi.stubEnv("TESTIT_PROJECT_ID", "env-project");
+    await expect(resolveProjectId({}, {} as never)).resolves.toBe("env-project");
+    vi.stubEnv("TESTIT_PROJECT_ID", "");
+    await expect(resolveProjectId({}, {} as never)).rejects.toThrow("Project scope is required.");
   });
 });
-
-

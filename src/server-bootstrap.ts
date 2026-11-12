@@ -7,7 +7,7 @@ import { createSharedStepTools } from "./tools/shared-steps.js";
 import { createWorkItemTools } from "./tools/work-items.js";
 import { createTestPlanTools } from "./tools/test-plans.js";
 import { createTestResultTools } from "./tools/test-results.js";
-import { McpToolDefinition, ToolHandler } from "./tools/types.js";
+import { McpToolDefinition, ToolBundle, ToolHandler } from "./tools/types.js";
 
 export function requiredEnv(name: string): string {
   const value = process.env[name];
@@ -17,23 +17,29 @@ export function requiredEnv(name: string): string {
   return value;
 }
 
+export interface NamedToolBundle extends ToolBundle {
+  category: string;
+}
+
+export function buildToolBundles(client: TestITApiClient): NamedToolBundle[] {
+  return [
+    { category: "Projects", ...createProjectTools(client) },
+    { category: "Work Items", ...createWorkItemTools(client) },
+    { category: "Test Runs", ...createTestRunTools(client) },
+    { category: "Test Results", ...createTestResultTools(client) },
+    { category: "Test Plans", ...createTestPlanTools(client) },
+    { category: "Analytics", ...createAnalyticTools(client) },
+    { category: "Shared Steps", ...createSharedStepTools(client) },
+    { category: "Configurations", ...createConfigurationTools(client) },
+  ];
+}
+
 export function buildToolRegistry(
   client: TestITApiClient,
 ): { tools: McpToolDefinition[]; handlers: Map<string, ToolHandler> } {
-  const bundles = [
-    createProjectTools(client),
-    createWorkItemTools(client),
-    createTestRunTools(client),
-    createTestResultTools(client),
-    createTestPlanTools(client),
-    createAnalyticTools(client),
-    createSharedStepTools(client),
-    createConfigurationTools(client),
-  ];
-
   const tools: McpToolDefinition[] = [];
   const handlers = new Map<string, ToolHandler>();
-  for (const bundle of bundles) {
+  for (const bundle of buildToolBundles(client)) {
     tools.push(...bundle.tools);
     for (const [name, handler] of Object.entries(bundle.handlers)) {
       handlers.set(name, handler);
