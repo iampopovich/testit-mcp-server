@@ -32,3 +32,15 @@ export function updateProject(
 export function deleteProject(client: TestITApiClient, id: string): Promise<unknown> {
   return client.delete(`/api/v2/projects/${id}`);
 }
+
+export function patchProject(
+  client: TestITApiClient,
+  id: string,
+  operations: Array<Record<string, unknown>>,
+): Promise<unknown> {
+  return client.patch(`/api/v2/projects/${id}`, operations);
+}
+
+export function listProjectAutoTestNamespaces(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.get(`/api/v2/projects/${id}/autoTestsNamespaces`);
+}

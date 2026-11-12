@@ -60,3 +60,11 @@ export function setAutoTestsFlaky(client: TestITApiClient, autoTestIds: string[]
     value,
   });
 }
+
+export function patchAutoTest(
+  client: TestITApiClient,
+  id: string,
+  operations: Array<Record<string, unknown>>,
+): Promise<unknown> {
+  return client.patch(`/api/v2/autoTests/${id}`, operations);
+}

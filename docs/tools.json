@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T14:32:39.877Z",
-  "totalTools": 113,
+  "generatedAt": "2026-11-12T14:38:20.502Z",
+  "totalTools": 119,
   "categories": [
     {
       "name": "Projects",
@@ -79,7 +79,7 @@
         },
         {
           "name": "create_project",
-          "description": "Create a new project.",
+          "description": "Create a new project (payload: CreateProjectApiModel, at least name). Cloud instances may answer 402 when the plan's project limit is reached.",
           "inputSchema": {
             "type": "object",
             "properties": {
@@ -101,7 +101,7 @@
         },
         {
           "name": "update_project",
-          "description": "Update an existing project (PUT).",
+          "description": "Replace a project (PUT, full model with id); fields not sent are cleared. Prefer set_project.",
           "inputSchema": {
             "type": "object",
             "properties": {
@@ -140,6 +140,53 @@
             "readOnlyHint": false,
             "destructiveHint": true,
             "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_project",
+          "description": "Partially update a project (JSON Patch): only name/description you pass change.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Project UUID."
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_project_autotest_namespaces",
+          "description": "Autotest namespaces of a project with their classes (for filtering search_autotests).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string"
+              },
+              "projectName": {
+                "type": "string"
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
             "openWorldHint": true
           }
         },
@@ -983,6 +1030,104 @@
             "readOnlyHint": false,
             "destructiveHint": true,
             "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_work_item_autotests",
+          "description": "Autotests linked to a work item.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Work item UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "unlink_work_item_autotests",
+          "description": "Remove ALL autotest links of a work item; it becomes manual (isAutomated=false). To drop one link use unlink_autotest_work_item.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Work item UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_shared_step_references",
+          "description": "Where a shared step is used: work items whose steps reference it, and sections (target).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Shared step (work item) UUID."
+              },
+              "target": {
+                "type": "string",
+                "enum": [
+                  "workItems",
+                  "sections"
+                ],
+                "description": "Default workItems."
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
             "openWorldHint": true
           }
         },
@@ -3269,6 +3414,43 @@
           "annotations": {
             "readOnlyHint": false,
             "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_autotest",
+          "description": "Partially update an autotest (JSON Patch): only name, title, description, namespace, classname you pass change. externalId is the result-matching key and is not editable here.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Autotest UUID."
+              },
+              "name": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "namespace": {
+                "type": "string"
+              },
+              "classname": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
             "idempotentHint": true,
             "openWorldHint": true
           }

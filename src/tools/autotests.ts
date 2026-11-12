@@ -131,6 +131,24 @@ export function createAutoTestTools(client: TestITApiClient): ToolBundle {
       inputSchema: linkSchema,
     },
     {
+      name: "set_autotest",
+      description:
+        "Partially update an autotest (JSON Patch): only name, title, description, namespace, classname you pass " +
+        "change. externalId is the result-matching key and is not editable here.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Autotest UUID." },
+          name: { type: "string" },
+          title: { type: "string" },
+          description: { type: "string" },
+          namespace: { type: "string" },
+          classname: { type: "string" },
+        },
+        required: ["id"],
+      },
+    },
+    {
       name: "get_autotest_results_history",
       description:
         "Results of an autotest across test runs (status, outcome, run, plan, configuration, duration), newest first.",
@@ -235,6 +253,22 @@ export function createAutoTestTools(client: TestITApiClient): ToolBundle {
     unlink_autotest_work_item: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
       return api.unlinkAutoTestWorkItem(client, getRequiredString(args, "id"), getRequiredString(args, "workItemId"));
+    },
+    set_autotest: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const operations = Object.entries(
+        compact({
+          name: getOptionalString(args, "name"),
+          title: getOptionalString(args, "title"),
+          description: getOptionalString(args, "description"),
+          namespace: getOptionalString(args, "namespace"),
+          classname: getOptionalString(args, "classname"),
+        }),
+      ).map(([key, value]) => ({ op: "replace", path: `/${key}`, value }));
+      if (operations.length === 0) {
+        throw new Error("Nothing to update: pass at least one of name, title, description, namespace, classname.");
+      }
+      return api.patchAutoTest(client, getRequiredString(args, "id"), operations);
     },
     get_autotest_results_history: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

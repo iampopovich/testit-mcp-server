@@ -316,6 +316,39 @@ export function createWorkItemTools(
       },
     },
     {
+      name: "list_work_item_autotests",
+      description: "Autotests linked to a work item.",
+      inputSchema: {
+        type: "object" as const,
+        properties: { id: { type: "string", description: "Work item UUID." } },
+        required: ["id"],
+      },
+    },
+    {
+      name: "unlink_work_item_autotests",
+      description:
+        "Remove ALL autotest links of a work item; it becomes manual (isAutomated=false). To drop one link use " +
+        "unlink_autotest_work_item.",
+      inputSchema: {
+        type: "object" as const,
+        properties: { id: { type: "string", description: "Work item UUID." } },
+        required: ["id"],
+      },
+    },
+    {
+      name: "list_shared_step_references",
+      description: "Where a shared step is used: work items whose steps reference it, and sections (target).",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Shared step (work item) UUID." },
+          target: { type: "string", enum: ["workItems", "sections"], description: "Default workItems." },
+          ...PAGINATION_PROPERTIES,
+        },
+        required: ["id"],
+      },
+    },
+    {
       name: "get_work_item_test_results_history",
       description:
         "Test results of a work item across test runs/plans (newest first), with optional filters.",
@@ -453,6 +486,22 @@ export function createWorkItemTools(
     delete_work_item_comment: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
       return api.deleteWorkItemComment(client, getRequiredString(args, "commentId"));
+    },
+    list_work_item_autotests: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.listWorkItemAutoTests(client, getRequiredString(args, "id"));
+    },
+    unlink_work_item_autotests: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.unlinkWorkItemAutoTests(client, getRequiredString(args, "id"));
+    },
+    list_shared_step_references: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const target = getOptionalString(args, "target") ?? "workItems";
+      if (target !== "workItems" && target !== "sections") {
+        throw new Error('"target" must be "workItems" or "sections".');
+      }
+      return api.searchSharedStepReferences(client, getRequiredString(args, "id"), target, pickPagination(args));
     },
     get_work_item_test_results_history: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

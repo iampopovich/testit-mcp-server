@@ -51,7 +51,7 @@ describe.skipIf(!integrationEnabled || !existsSync(serverPath))("integration: MC
     await withServer({ TESTIT_TOOLSETS: "projects" }, async (client) => {
       const { tools } = await client.listTools();
       expect(tools.length).toBeGreaterThan(0);
-      expect(tools.every((t) => t.name.endsWith("_project") || t.name.endsWith("_projects"))).toBe(true);
+      expect(tools.every((t) => t.name.includes("project"))).toBe(true);
     });
   });
 

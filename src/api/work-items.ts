@@ -116,3 +116,21 @@ export function getWorkItemTestResultsHistory(
 ): Promise<unknown> {
   return client.get(`/api/v2/workItems/${id}/testResults/history`, query);
 }
+
+export function listWorkItemAutoTests(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.get(`/api/v2/workItems/${id}/autoTests`);
+}
+
+/** Removes ALL autotest links of the work item (it becomes manual). */
+export function unlinkWorkItemAutoTests(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.delete(`/api/v2/workItems/${id}/autoTests`);
+}
+
+export function searchSharedStepReferences(
+  client: TestITApiClient,
+  sharedStepId: string,
+  target: "workItems" | "sections",
+  query: QueryParams,
+): Promise<unknown> {
+  return client.post(`/api/v2/workItems/${sharedStepId}/references/${target}`, {}, query);
+}
