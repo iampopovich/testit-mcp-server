@@ -164,7 +164,7 @@ export function createWorkItemTools(
     },
     {
       name: "update_work_item",
-      description: "Update an existing work item.",
+      description: "Replace a work item (PUT, full model with id). Fields not sent are cleared; prefer set_work_item.",
       inputSchema: {
         type: "object" as const,
         properties: {
@@ -234,6 +234,98 @@ export function createWorkItemTools(
           contentBase64: { type: "string", description: "File content encoded as base64." },
         },
         required: ["id", "filename", "contentType", "contentBase64"],
+      },
+    },
+    {
+      name: "set_work_item",
+      description:
+        "Partially update a work item: only the given fields change (JSON Patch), each call creates a new " +
+        "version. Prefer this over update_work_item (full replacement). Use move_work_item to change section.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Work item UUID." },
+          name: { type: "string" },
+          description: { type: "string" },
+          state: { type: "string", enum: ["NeedsWork", "NotReady", "Ready"] },
+          priority: { type: "string", enum: ["Lowest", "Low", "Medium", "High", "Highest"] },
+          tags: { type: "array", items: { type: "string" }, description: "Tag names; replaces all tags." },
+        },
+        required: ["id"],
+      },
+    },
+    {
+      name: "move_work_item",
+      description: "Move a work item to another section (optionally before nextWorkItemId).",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Work item UUID." },
+          sectionId: { type: "string", description: "Target section UUID (see list_sections)." },
+          nextWorkItemId: { type: "string", description: "Place before this work item (optional)." },
+        },
+        required: ["id", "sectionId"],
+      },
+    },
+    {
+      name: "list_work_item_comments",
+      description: "List comments of a work item.",
+      inputSchema: {
+        type: "object" as const,
+        properties: { id: { type: "string", description: "Work item UUID." } },
+        required: ["id"],
+      },
+    },
+    {
+      name: "create_work_item_comment",
+      description: "Add a comment to a work item.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          workItemId: { type: "string", description: "Work item UUID." },
+          text: { type: "string" },
+        },
+        required: ["workItemId", "text"],
+      },
+    },
+    {
+      name: "update_work_item_comment",
+      description: "Replace the text of a work item comment.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          commentId: { type: "string", description: "Comment UUID." },
+          text: { type: "string" },
+        },
+        required: ["commentId", "text"],
+      },
+    },
+    {
+      name: "delete_work_item_comment",
+      description: "Delete a work item comment.",
+      inputSchema: {
+        type: "object" as const,
+        properties: { commentId: { type: "string", description: "Comment UUID." } },
+        required: ["commentId"],
+      },
+    },
+    {
+      name: "get_work_item_test_results_history",
+      description:
+        "Test results of a work item across test runs/plans (newest first), with optional filters.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          id: { type: "string", description: "Work item UUID." },
+          from: { type: "string", description: "ISO date-time lower bound." },
+          to: { type: "string", description: "ISO date-time upper bound." },
+          configurationIds: { type: "array", items: { type: "string" } },
+          testPlanIds: { type: "array", items: { type: "string" } },
+          testRunIds: { type: "array", items: { type: "string" } },
+          statusCodes: { type: "array", items: { type: "string" } },
+          ...PAGINATION_PROPERTIES,
+        },
+        required: ["id"],
       },
     },
   ];
@@ -312,6 +404,61 @@ export function createWorkItemTools(
       const contentType = getRequiredString(args, "contentType");
       const contentBase64 = getRequiredString(args, "contentBase64");
       return api.uploadWorkItemAttachment(client, id, filename, contentType, contentBase64);
+    },
+    set_work_item: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const changes: Record<string, unknown> = {
+        name: getOptionalString(args, "name"),
+        description: getOptionalString(args, "description"),
+        state: getOptionalString(args, "state"),
+        priority: getOptionalString(args, "priority"),
+        tags: getOptionalStringArray(args, "tags")?.map((name) => ({ name })),
+      };
+      const operations = Object.entries(changes)
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => ({ op: "replace", path: `/${key}`, value }));
+      if (operations.length === 0) {
+        throw new Error("Nothing to update: pass at least one of name, description, state, priority, tags.");
+      }
+      return api.patchWorkItem(client, getRequiredString(args, "id"), operations);
+    },
+    move_work_item: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      const body: Record<string, unknown> = {
+        id: getRequiredString(args, "id"),
+        newSectionId: getRequiredString(args, "sectionId"),
+      };
+      const next = getOptionalString(args, "nextWorkItemId");
+      if (next) body.nextWorkItemId = next;
+      return api.moveWorkItem(client, body);
+    },
+    list_work_item_comments: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.listWorkItemComments(client, getRequiredString(args, "id"));
+    },
+    create_work_item_comment: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.createWorkItemComment(client, getRequiredString(args, "workItemId"), getRequiredString(args, "text"));
+    },
+    update_work_item_comment: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.updateWorkItemComment(client, getRequiredString(args, "commentId"), getRequiredString(args, "text"));
+    },
+    delete_work_item_comment: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.deleteWorkItemComment(client, getRequiredString(args, "commentId"));
+    },
+    get_work_item_test_results_history: async (rawArgs: unknown) => {
+      const args = asObject(rawArgs);
+      return api.getWorkItemTestResultsHistory(client, getRequiredString(args, "id"), {
+        from: getOptionalString(args, "from"),
+        to: getOptionalString(args, "to"),
+        configurationIds: getOptionalStringArray(args, "configurationIds"),
+        testPlanIds: getOptionalStringArray(args, "testPlanIds"),
+        testRunIds: getOptionalStringArray(args, "testRunIds"),
+        statusCodes: getOptionalStringArray(args, "statusCodes"),
+        ...pickPagination(args),
+      });
     },
   };
 

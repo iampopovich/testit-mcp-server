@@ -79,3 +79,40 @@ export async function uploadWorkItemAttachment(
   formData.append("file", blob, filename);
   return client.postMultipart(`/api/v2/workItems/${id}/attachments`, formData);
 }
+
+/** JSON Patch; every successful patch creates a new work item version. */
+export function patchWorkItem(
+  client: TestITApiClient,
+  id: string,
+  operations: Array<Record<string, unknown>>,
+): Promise<unknown> {
+  return client.patch(`/api/v2/workItems/${id}`, operations);
+}
+
+export function moveWorkItem(client: TestITApiClient, body: Record<string, unknown>): Promise<unknown> {
+  return client.post("/api/v2/workItems/move", body);
+}
+
+export function listWorkItemComments(client: TestITApiClient, id: string): Promise<unknown> {
+  return client.get(`/api/v2/workItems/${id}/comments`);
+}
+
+export function createWorkItemComment(client: TestITApiClient, workItemId: string, text: string): Promise<unknown> {
+  return client.post("/api/v2/workItems/comments", { workItemId, text });
+}
+
+export function updateWorkItemComment(client: TestITApiClient, id: string, text: string): Promise<unknown> {
+  return client.put("/api/v2/workItems/comments", { id, text });
+}
+
+export function deleteWorkItemComment(client: TestITApiClient, commentId: string): Promise<unknown> {
+  return client.delete(`/api/v2/workItems/comments/${commentId}`);
+}
+
+export function getWorkItemTestResultsHistory(
+  client: TestITApiClient,
+  id: string,
+  query: QueryParams,
+): Promise<unknown> {
+  return client.get(`/api/v2/workItems/${id}/testResults/history`, query);
+}

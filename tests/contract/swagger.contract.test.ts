@@ -32,6 +32,7 @@ const KNOWN_VIOLATIONS: Record<string, string> = {
 const EXTRA_ARGS: Record<string, Record<string, unknown>> = {
   set_test_result: { comment: "x" },
   set_configuration: { name: "x" },
+  set_work_item: { name: "x" },
 };
 
 /** Canned responses for tools that read before they write ("METHOD path" -> body). */

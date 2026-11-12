@@ -122,3 +122,50 @@ describe("work item listing tools", () => {
     expect(definedQuery(client.calls[0].query)).toEqual({ Take: 5 });
   });
 });
+
+describe("work item edit tools", () => {
+  it("set_work_item builds replace operations for given fields only", async () => {
+    const { client, call } = setup();
+    await call("set_work_item", { id: "w1", state: "Ready", tags: ["smoke"] });
+    expect(client.calls[0]).toMatchObject({
+      method: "PATCH",
+      path: "/api/v2/workItems/w1",
+      body: [
+        { op: "replace", path: "/state", value: "Ready" },
+        { op: "replace", path: "/tags", value: [{ name: "smoke" }] },
+      ],
+    });
+    await expect(call("set_work_item", { id: "w1" })).rejects.toThrow("Nothing to update");
+  });
+
+  it("move_work_item maps sectionId to newSectionId", async () => {
+    const { client, call } = setup();
+    await call("move_work_item", { id: "w1", sectionId: "s2" });
+    expect(client.calls[0]).toMatchObject({
+      method: "POST",
+      path: "/api/v2/workItems/move",
+      body: { id: "w1", newSectionId: "s2" },
+    });
+  });
+
+  it("comment tools hit the comment endpoints", async () => {
+    const { client, call } = setup();
+    await call("create_work_item_comment", { workItemId: "w1", text: "hi" });
+    await call("update_work_item_comment", { commentId: "c1", text: "hey" });
+    await call("list_work_item_comments", { id: "w1" });
+    await call("delete_work_item_comment", { commentId: "c1" });
+    expect(client.calls.map((c) => [c.method, c.path, c.body])).toEqual([
+      ["POST", "/api/v2/workItems/comments", { workItemId: "w1", text: "hi" }],
+      ["PUT", "/api/v2/workItems/comments", { id: "c1", text: "hey" }],
+      ["GET", "/api/v2/workItems/w1/comments", undefined],
+      ["DELETE", "/api/v2/workItems/comments/c1", undefined],
+    ]);
+  });
+
+  it("get_work_item_test_results_history passes filters as query", async () => {
+    const { client, call } = setup();
+    await call("get_work_item_test_results_history", { id: "w1", testPlanIds: ["tp"], take: 10 });
+    expect(client.calls[0].path).toBe("/api/v2/workItems/w1/testResults/history");
+    expect(definedQuery(client.calls[0].query)).toEqual({ testPlanIds: ["tp"], Take: 10 });
+  });
+});

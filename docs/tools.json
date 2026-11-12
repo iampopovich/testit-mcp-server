@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T08:38:34.101Z",
-  "totalTools": 80,
+  "generatedAt": "2026-11-12T08:40:33.038Z",
+  "totalTools": 87,
   "categories": [
     {
       "name": "Projects",
@@ -610,7 +610,7 @@
         },
         {
           "name": "update_work_item",
-          "description": "Update an existing work item.",
+          "description": "Replace a work item (PUT, full model with id). Fields not sent are cleared; prefer set_work_item.",
           "inputSchema": {
             "type": "object",
             "properties": {
@@ -798,6 +798,264 @@
             "readOnlyHint": false,
             "destructiveHint": false,
             "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_work_item",
+          "description": "Partially update a work item: only the given fields change (JSON Patch), each call creates a new version. Prefer this over update_work_item (full replacement). Use move_work_item to change section.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Work item UUID."
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "NeedsWork",
+                  "NotReady",
+                  "Ready"
+                ]
+              },
+              "priority": {
+                "type": "string",
+                "enum": [
+                  "Lowest",
+                  "Low",
+                  "Medium",
+                  "High",
+                  "Highest"
+                ]
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names; replaces all tags."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "move_work_item",
+          "description": "Move a work item to another section (optionally before nextWorkItemId).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Work item UUID."
+              },
+              "sectionId": {
+                "type": "string",
+                "description": "Target section UUID (see list_sections)."
+              },
+              "nextWorkItemId": {
+                "type": "string",
+                "description": "Place before this work item (optional)."
+              }
+            },
+            "required": [
+              "id",
+              "sectionId"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_work_item_comments",
+          "description": "List comments of a work item.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Work item UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "create_work_item_comment",
+          "description": "Add a comment to a work item.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "workItemId": {
+                "type": "string",
+                "description": "Work item UUID."
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "workItemId",
+              "text"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "update_work_item_comment",
+          "description": "Replace the text of a work item comment.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "commentId": {
+                "type": "string",
+                "description": "Comment UUID."
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "commentId",
+              "text"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_work_item_comment",
+          "description": "Delete a work item comment.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "commentId": {
+                "type": "string",
+                "description": "Comment UUID."
+              }
+            },
+            "required": [
+              "commentId"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_work_item_test_results_history",
+          "description": "Test results of a work item across test runs/plans (newest first), with optional filters.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Work item UUID."
+              },
+              "from": {
+                "type": "string",
+                "description": "ISO date-time lower bound."
+              },
+              "to": {
+                "type": "string",
+                "description": "ISO date-time upper bound."
+              },
+              "configurationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "testPlanIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "testRunIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "statusCodes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
             "openWorldHint": true
           }
         }
