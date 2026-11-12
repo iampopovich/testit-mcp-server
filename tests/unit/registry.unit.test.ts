@@ -6,7 +6,7 @@ import { createRecordingClient, expectObjectSchemas, expectToolHandlerParity } f
 describe("tool registry", () => {
   it("has unique tool names, a handler per tool and valid object schemas", () => {
     const client = createRecordingClient();
-    const { tools, handlers } = buildToolRegistry(client as never);
+    const { tools, handlers } = buildToolRegistry(client as never, { toolsets: ["all"] });
     const bundle = { tools, handlers: Object.fromEntries(handlers) };
     expectToolHandlerParity(bundle);
     expectObjectSchemas(bundle);
@@ -14,7 +14,7 @@ describe("tool registry", () => {
   });
 
   it("annotates every tool", () => {
-    const { tools } = buildToolRegistry(createRecordingClient() as never);
+    const { tools } = buildToolRegistry(createRecordingClient() as never, { toolsets: ["all"] });
     for (const tool of tools) {
       expect(tool.annotations, tool.name).toBeDefined();
       expect(tool.annotations?.openWorldHint, tool.name).toBe(true);
@@ -58,6 +58,17 @@ describe("tool registry", () => {
       "list_test_runs",
       "search_test_runs",
     ]);
+  });
+
+  it("opt-in toolsets: hidden by default, enabled by name or \"all\"", () => {
+    const names = (toolsets?: string[]) =>
+      buildToolRegistry(createRecordingClient() as never, { toolsets }).tools.map((t) => t.name);
+    expect(names()).not.toContain("create_global_attribute");
+    expect(names()).toContain("list_work_items");
+    expect(names(["default"])).toEqual(names());
+    expect(names(["default", "admin"])).toEqual(expect.arrayContaining(["create_global_attribute", "list_work_items"]));
+    expect(names(["admin"])).not.toContain("list_work_items");
+    expect(names(["all"]).length).toBeGreaterThan(names(["default", "admin"]).length - 1);
   });
 
   it("parseListEnv splits on commas and spaces", () => {

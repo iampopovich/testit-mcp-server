@@ -37,6 +37,9 @@ const EXTRA_ARGS: Record<string, Record<string, unknown>> = {
   set_autotests_flaky: { value: true },
   set_project: { name: "x" },
   set_autotest: { name: "x" },
+  set_global_attribute: { name: "x" },
+  set_project_attribute: { name: "x" },
+  create_attribute_template: { attributeIds: ["a", "b"] },
   create_test_run_from_test_points: { testPointSelectors: [{ configurationId: "c", workItemIds: ["w"] }] },
 };
 
@@ -84,7 +87,7 @@ function violationsFor(paths: SpecPaths, calls: ReturnType<typeof createRecordin
 describe.skipIf(!specAvailable)("contract: tools vs TestIT OpenAPI spec", () => {
   const spec = specAvailable ? JSON.parse(readFileSync(specPath as string, "utf8")) : { paths: {} };
   const paths = spec.paths as SpecPaths;
-  const { tools } = buildToolRegistry(createRecordingClient() as never);
+  const { tools } = buildToolRegistry(createRecordingClient() as never, { toolsets: ["all"] });
 
   for (const tool of tools) {
     it(tool.name, async () => {
@@ -92,7 +95,7 @@ describe.skipIf(!specAvailable)("contract: tools vs TestIT OpenAPI spec", () => 
       for (const [key, value] of Object.entries(PRESET_RESPONSES[tool.name] ?? {})) {
         client.responses.set(key, value);
       }
-      const { handlers } = buildToolRegistry(client as never);
+      const { handlers } = buildToolRegistry(client as never, { toolsets: ["all"] });
       const args = { ...sampleArgs(tool.inputSchema), ...EXTRA_ARGS[tool.name] };
       // Exercise advertised paging params so unsupported ones get caught.
       const props = tool.inputSchema.properties ?? {};

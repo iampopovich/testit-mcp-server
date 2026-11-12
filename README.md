@@ -44,8 +44,10 @@ TESTIT_TOKEN=your-api-token
 - `TESTIT_TOKEN` required
 - `TESTIT_PROJECT_ID` optional
 - `TESTIT_READ_ONLY` optional (`true`/`1`): expose only read-only tools (list/get/search)
-- `TESTIT_TOOLSETS` optional: comma-separated toolsets to expose (default: all) —
-  `projects`, `work-items`, `sections`, `test-runs`, `test-results`, `test-plans`, `test-suites`, `autotests`, `analytics`, `shared-steps`, `configurations`, `configuration-parameters`, `attachments`, `dictionaries`.
+- `TESTIT_TOOLSETS` optional: comma-separated toolsets to expose (default: `default`) —
+  `projects`, `work-items`, `sections`, `test-runs`, `test-results`, `test-plans`, `test-suites`, `autotests`, `analytics`, `shared-steps`, `configurations`, `configuration-parameters`, `attachments`, `dictionaries`;
+  opt-in (hidden unless listed): `admin` (custom attributes, templates, webhooks, workflows, notifications, project settings), `bulk` (mass delete/restore/purge).
+  Keywords: `default` = all non-opt-in toolsets, `all` = everything. Example: `TESTIT_TOOLSETS=default,admin`.
   Fewer tools = less model context.
 
 Every tool carries MCP annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`), so clients can ask for confirmation before destructive calls (delete/purge and full-replacement `update_*`).

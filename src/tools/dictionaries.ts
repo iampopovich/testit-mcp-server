@@ -38,6 +38,11 @@ export function createDictionaryTools(client: TestITApiClient): ToolBundle {
       },
     },
     {
+      name: "list_test_plan_tags",
+      description: "Tags used by test plans (instance-wide).",
+      inputSchema: { type: "object" as const, properties: { ...PAGINATION_PROPERTIES } },
+    },
+    {
       name: "list_project_attributes",
       description:
         "List custom attributes of a project (id, name, type, isRequired, options). Use attribute ids as " +
@@ -68,6 +73,9 @@ export function createDictionaryTools(client: TestITApiClient): ToolBundle {
         query.SearchField = "name";
       }
       return api.searchTags(client, query);
+    },
+    list_test_plan_tags: async (rawArgs: unknown) => {
+      return api.listTestPlanTags(client, pickPagination(asObject(rawArgs)));
     },
     list_project_attributes: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

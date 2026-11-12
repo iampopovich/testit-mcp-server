@@ -12,6 +12,7 @@ import { createAutoTestTools } from "./tools/autotests.js";
 import { createDictionaryTools } from "./tools/dictionaries.js";
 import { createConfigurationParameterTools } from "./tools/configuration-parameters.js";
 import { createAttachmentTools } from "./tools/attachments.js";
+import { createCustomAttributeTools } from "./tools/custom-attributes.js";
 import { createTestResultTools } from "./tools/test-results.js";
 import { annotationsFor } from "./tools/annotations.js";
 import { McpToolDefinition, ToolBundle, ToolHandler } from "./tools/types.js";
@@ -51,15 +52,23 @@ export function buildToolBundles(client: TestITApiClient): NamedToolBundle[] {
     },
     { category: "Attachments", toolset: "attachments", ...createAttachmentTools(client) },
     { category: "Dictionaries", toolset: "dictionaries", ...createDictionaryTools(client) },
+    { category: "Custom Attributes (admin)", toolset: "admin", ...createCustomAttributeTools(client) },
   ];
 }
 
 export interface ToolRegistryOptions {
   /** Expose only tools without side effects (readOnlyHint). */
   readOnly?: boolean;
-  /** Expose only these toolsets; undefined or empty = all. */
+  /**
+   * Toolsets to expose; undefined or empty = "default". Keywords: "default" (every toolset
+   * except opt-in ones), "all" (everything).
+   */
   toolsets?: string[];
 }
+
+/** Admin and bulk tools are hidden unless requested explicitly (TESTIT_TOOLSETS=default,admin). */
+export const OPT_IN_TOOLSETS: ReadonlySet<string> = new Set(["admin", "bulk"]);
+const TOOLSET_KEYWORDS: ReadonlySet<string> = new Set(["default", "all"]);
 
 /** Bundles with annotations applied — the single source for the server and the catalog. */
 export function buildAnnotatedBundles(
@@ -67,19 +76,22 @@ export function buildAnnotatedBundles(
   options: ToolRegistryOptions = {},
 ): NamedToolBundle[] {
   const bundles = buildToolBundles(client);
-  const selected = options.toolsets?.length ? new Set(options.toolsets) : undefined;
-  if (selected) {
-    const known = new Set(bundles.map((bundle) => bundle.toolset));
-    const unknown = [...selected].filter((name) => !known.has(name));
-    if (unknown.length > 0) {
-      throw new Error(
-        `Unknown toolset(s) in TESTIT_TOOLSETS: ${unknown.join(", ")}. Valid: ${[...known].join(", ")}.`,
-      );
-    }
+  const requested = options.toolsets?.length ? new Set(options.toolsets) : new Set(["default"]);
+  const known = new Set(bundles.map((bundle) => bundle.toolset));
+  const unknown = [...requested].filter((name) => !known.has(name) && !TOOLSET_KEYWORDS.has(name));
+  if (unknown.length > 0) {
+    throw new Error(
+      `Unknown toolset(s) in TESTIT_TOOLSETS: ${unknown.join(", ")}. Valid: ${[...known].join(", ")}, ` +
+        `or the keywords "default" (all non-opt-in toolsets) and "all".`,
+    );
   }
+  const isSelected = (bundle: NamedToolBundle) =>
+    requested.has("all") ||
+    requested.has(bundle.toolset) ||
+    (requested.has("default") && !OPT_IN_TOOLSETS.has(bundle.toolset));
 
   return bundles
-    .filter((bundle) => !selected || selected.has(bundle.toolset))
+    .filter(isSelected)
     .map((bundle) => {
       const tools = bundle.tools
         .map((tool) => ({ ...tool, annotations: annotationsFor(tool.name) }))

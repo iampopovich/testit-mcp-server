@@ -1,10 +1,11 @@
 {
-  "generatedAt": "2026-11-12T14:52:20.597Z",
-  "totalTools": 129,
+  "generatedAt": "2026-11-12T15:13:24.469Z",
+  "totalTools": 152,
   "categories": [
     {
       "name": "Projects",
       "toolset": "projects",
+      "optIn": false,
       "tools": [
         {
           "name": "list_projects",
@@ -243,6 +244,7 @@
     {
       "name": "Work Items",
       "toolset": "work-items",
+      "optIn": false,
       "tools": [
         {
           "name": "list_work_items",
@@ -1216,6 +1218,7 @@
     {
       "name": "Sections",
       "toolset": "sections",
+      "optIn": false,
       "tools": [
         {
           "name": "list_sections",
@@ -1444,6 +1447,7 @@
     {
       "name": "Test Runs",
       "toolset": "test-runs",
+      "optIn": false,
       "tools": [
         {
           "name": "list_test_runs",
@@ -2050,6 +2054,7 @@
     {
       "name": "Test Results",
       "toolset": "test-results",
+      "optIn": false,
       "tools": [
         {
           "name": "get_test_result",
@@ -2498,6 +2503,7 @@
     {
       "name": "Test Plans",
       "toolset": "test-plans",
+      "optIn": false,
       "tools": [
         {
           "name": "list_test_plans",
@@ -2991,6 +2997,7 @@
     {
       "name": "Test Suites & Points",
       "toolset": "test-suites",
+      "optIn": false,
       "tools": [
         {
           "name": "list_test_plan_test_suites",
@@ -3367,6 +3374,7 @@
     {
       "name": "Autotests",
       "toolset": "autotests",
+      "optIn": false,
       "tools": [
         {
           "name": "search_autotests",
@@ -3865,6 +3873,7 @@
     {
       "name": "Analytics",
       "toolset": "analytics",
+      "optIn": false,
       "tools": [
         {
           "name": "get_project_analytics",
@@ -3962,6 +3971,7 @@
     {
       "name": "Shared Steps",
       "toolset": "shared-steps",
+      "optIn": false,
       "tools": [
         {
           "name": "list_shared_steps",
@@ -4083,6 +4093,7 @@
     {
       "name": "Configurations",
       "toolset": "configurations",
+      "optIn": false,
       "tools": [
         {
           "name": "list_configurations",
@@ -4353,6 +4364,7 @@
     {
       "name": "Configuration Parameters",
       "toolset": "configuration-parameters",
+      "optIn": false,
       "tools": [
         {
           "name": "search_configuration_parameters",
@@ -4515,6 +4527,7 @@
     {
       "name": "Attachments",
       "toolset": "attachments",
+      "optIn": false,
       "tools": [
         {
           "name": "upload_attachment",
@@ -4615,6 +4628,7 @@
     {
       "name": "Dictionaries",
       "toolset": "dictionaries",
+      "optIn": false,
       "tools": [
         {
           "name": "list_test_statuses",
@@ -4676,6 +4690,47 @@
           }
         },
         {
+          "name": "list_test_plan_tags",
+          "description": "Tags used by test plans (instance-wide).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
           "name": "list_project_attributes",
           "description": "List custom attributes of a project (id, name, type, isRequired, options). Use attribute ids as keys of \"attributes\" when creating work items or test plans.",
           "inputSchema": {
@@ -4694,6 +4749,742 @@
           },
           "annotations": {
             "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Custom Attributes (admin)",
+      "toolset": "admin",
+      "optIn": true,
+      "tools": [
+        {
+          "name": "search_custom_attributes",
+          "description": "Search custom attributes across the instance (global and project ones). Active only unless isDeleted=true.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "types": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "string",
+                    "datetime",
+                    "options",
+                    "user",
+                    "multipleOptions",
+                    "checkbox"
+                  ]
+                }
+              },
+              "isGlobal": {
+                "type": "boolean"
+              },
+              "isDeleted": {
+                "type": "boolean",
+                "description": "Default false."
+              },
+              "projectIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_custom_attribute",
+          "description": "Get a custom attribute (with options and their ids).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Attribute UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "create_global_attribute",
+          "description": "Create a global custom attribute (available to all projects after link_project_global_attributes).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "string",
+                  "datetime",
+                  "options",
+                  "user",
+                  "multipleOptions",
+                  "checkbox"
+                ]
+              },
+              "options": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Option values for options/multipleOptions types."
+              },
+              "defaultOption": {
+                "type": "string",
+                "description": "Which of the options is the default."
+              },
+              "isRequired": {
+                "type": "boolean",
+                "description": "Default false."
+              },
+              "isEnabled": {
+                "type": "boolean",
+                "description": "Default true."
+              }
+            },
+            "required": [
+              "name",
+              "type"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_global_attribute",
+          "description": "Change name/isRequired/isEnabled of a global attribute; options are kept.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Global attribute UUID."
+              },
+              "name": {
+                "type": "string"
+              },
+              "isRequired": {
+                "type": "boolean"
+              },
+              "isEnabled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_global_attribute",
+          "description": "Delete (archive) a global attribute everywhere. The API has no restore or purge for attributes.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Global attribute UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "link_project_global_attributes",
+          "description": "Make global attributes available in a project (they appear in list_project_attributes).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "attributeIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "attributeIds"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "get_project_attribute",
+          "description": "Get a custom attribute of a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string",
+                "description": "Attribute UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "create_project_attribute",
+          "description": "Create a project-only custom attribute. Use its id as a key of \"attributes\" in create_work_item.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "string",
+                  "datetime",
+                  "options",
+                  "user",
+                  "multipleOptions",
+                  "checkbox"
+                ]
+              },
+              "options": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Option values for options/multipleOptions types."
+              },
+              "defaultOption": {
+                "type": "string",
+                "description": "Which of the options is the default."
+              },
+              "isRequired": {
+                "type": "boolean",
+                "description": "Default false."
+              },
+              "isEnabled": {
+                "type": "boolean",
+                "description": "Default true."
+              }
+            },
+            "required": [
+              "name",
+              "type"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_project_attribute",
+          "description": "Change name/isRequired/isEnabled of a project attribute; type and options are kept.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string",
+                "description": "Attribute UUID."
+              },
+              "name": {
+                "type": "string"
+              },
+              "isRequired": {
+                "type": "boolean"
+              },
+              "isEnabled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_project_attribute",
+          "description": "Remove an attribute from a project: a project attribute is archived (no restore), a global one is only detached from the project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string",
+                "description": "Attribute UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_test_plan_attributes",
+          "description": "Custom attributes enabled for test plans of a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "link_test_plan_attributes",
+          "description": "Enable (global) attributes for test plans of a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "attributeIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "attributeIds"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "set_test_plan_attribute",
+          "description": "Set isEnabled/isRequired of a test plan attribute in a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string",
+                "description": "Attribute UUID."
+              },
+              "isEnabled": {
+                "type": "boolean"
+              },
+              "isRequired": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "isEnabled",
+              "isRequired"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "unlink_test_plan_attribute",
+          "description": "Disable an attribute for test plans of a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string",
+                "description": "Attribute UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "search_attribute_templates",
+          "description": "Search custom attribute templates (named sets of global attributes) with their attributes. Active only unless isDeleted=true.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "isDeleted": {
+                "type": "boolean"
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "create_attribute_template",
+          "description": "Create a template from at least 2 global attributes (TestIT rejects fewer).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "attributeIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "At least 2."
+              }
+            },
+            "required": [
+              "name",
+              "attributeIds"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "link_attribute_template_attributes",
+          "description": "Add global attributes to a template.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Template UUID."
+              },
+              "attributeIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "attributeIds"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "unlink_attribute_template_attributes",
+          "description": "Remove attributes from a template. If fewer than 2 attributes would remain, TestIT DELETES the whole template (verified), so keep at least 2.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Template UUID."
+              },
+              "attributeIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "attributeIds"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "delete_attribute_template",
+          "description": "Delete (archive) an attribute template; its attributes stay. No restore or purge in the API.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Template UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_project_attribute_templates",
+          "description": "Attribute templates applied to a project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              }
+            }
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "link_project_attribute_template",
+          "description": "Apply a template to a project: all its attributes become available in the project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "templateId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "templateId"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "unlink_project_attribute_template",
+          "description": "Remove a template from a project together with its attributes (from that project only).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "templateId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "templateId"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
             "openWorldHint": true
           }
         }

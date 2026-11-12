@@ -19,6 +19,10 @@ export function listProjectWorkItemTags(client: TestITApiClient, projectId: stri
   return client.get(`/api/v2/projects/${projectId}/workItems/tags`);
 }
 
+export function listTestPlanTags(client: TestITApiClient, query: QueryParams): Promise<unknown> {
+  return client.get("/api/v2/tags/testPlansTags", query);
+}
+
 export function listProjectAttributes(
   client: TestITApiClient,
   projectId: string,

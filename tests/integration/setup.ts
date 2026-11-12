@@ -39,7 +39,7 @@ function getContext(): IntegrationContext {
 
   const tokenManager = new TokenManager({ baseUrl, apiToken });
   const client = new TestITApiClient({ baseUrl, tokenManager, defaultProjectId: projectId });
-  const { handlers } = buildToolRegistry(client);
+  const { handlers } = buildToolRegistry(client, { toolsets: ["all"] });
   cachedContext = { projectId, client, handlers };
   return cachedContext;
 }
