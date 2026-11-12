@@ -1,6 +1,7 @@
 {
   "name": "testit-mcp-server",
   "version": "0.1.1",
+  "supportedApiVersion": "",
   "description": "MCP server for TestIT (WorkItems, TestRuns, TestPlans)",
   "type": "module",
   "main": "dist/index.js",
