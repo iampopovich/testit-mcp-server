@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T07:44:09.232Z",
+  "generatedAt": "2026-11-12T07:45:16.244Z",
   "totalTools": 40,
   "categories": [
     {
@@ -410,17 +410,151 @@
         },
         {
           "name": "create_work_item",
-          "description": "Create a new work item.",
+          "description": "Create a test case, checklist or shared step. Defaults: entityTypeName=TestCases, state=NotReady, priority=Medium, duration=60000 ms (always 0 for SharedSteps — required by TestIT). Extra CreateWorkItemApiModel fields can be passed in \"payload\".",
           "inputSchema": {
             "type": "object",
             "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string",
+                "description": "Project name (alternative to projectId)."
+              },
+              "name": {
+                "type": "string",
+                "description": "Work item name."
+              },
+              "entityTypeName": {
+                "type": "string",
+                "enum": [
+                  "TestCases",
+                  "CheckLists",
+                  "SharedSteps"
+                ]
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "NeedsWork",
+                  "NotReady",
+                  "Ready"
+                ]
+              },
+              "priority": {
+                "type": "string",
+                "enum": [
+                  "Lowest",
+                  "Low",
+                  "Medium",
+                  "High",
+                  "Highest"
+                ]
+              },
+              "duration": {
+                "type": "number",
+                "description": "Duration in ms (1..86400000; 0 for SharedSteps)."
+              },
+              "sectionId": {
+                "type": "string",
+                "description": "Section UUID (root section if omitted)."
+              },
+              "description": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names."
+              },
+              "preconditionSteps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "action": {
+                      "type": "string"
+                    },
+                    "expected": {
+                      "type": "string"
+                    },
+                    "testData": {
+                      "type": "string"
+                    },
+                    "comments": {
+                      "type": "string"
+                    },
+                    "workItemId": {
+                      "type": "string",
+                      "description": "Shared step UUID to reference instead of an action."
+                    }
+                  }
+                }
+              },
+              "steps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "action": {
+                      "type": "string"
+                    },
+                    "expected": {
+                      "type": "string"
+                    },
+                    "testData": {
+                      "type": "string"
+                    },
+                    "comments": {
+                      "type": "string"
+                    },
+                    "workItemId": {
+                      "type": "string",
+                      "description": "Shared step UUID to reference instead of an action."
+                    }
+                  }
+                }
+              },
+              "postconditionSteps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "action": {
+                      "type": "string"
+                    },
+                    "expected": {
+                      "type": "string"
+                    },
+                    "testData": {
+                      "type": "string"
+                    },
+                    "comments": {
+                      "type": "string"
+                    },
+                    "workItemId": {
+                      "type": "string",
+                      "description": "Shared step UUID to reference instead of an action."
+                    }
+                  }
+                }
+              },
+              "attributes": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Custom attributes {attributeId: value}."
+              },
               "payload": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": true,
+                "description": "Raw CreateWorkItemApiModel fields; typed args take precedence."
               }
             },
             "required": [
-              "payload"
+              "name"
             ]
           }
         },

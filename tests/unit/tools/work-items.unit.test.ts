@@ -75,6 +75,44 @@ describe("work item listing tools", () => {
     expect(client.calls[1].body).toEqual({ filter: { name: "b" } });
   });
 
+  it("create_work_item builds a valid body with defaults", async () => {
+    const { client, call } = setup();
+    await call("create_work_item", { projectId: "p1", name: "Login", tags: ["smoke"] });
+    expect(client.calls[0].method).toBe("POST");
+    expect(client.calls[0].path).toBe("/api/v2/workItems");
+    expect(client.calls[0].body).toEqual({
+      projectId: "p1",
+      name: "Login",
+      entityTypeName: "TestCases",
+      state: "NotReady",
+      priority: "Medium",
+      duration: 60000,
+      tags: [{ name: "smoke" }],
+    });
+  });
+
+  it("create_work_item forces duration 0 for shared steps and merges raw payload", async () => {
+    const { client, call } = setup();
+    await call("create_work_item", {
+      projectId: "p1",
+      name: "Auth",
+      entityTypeName: "SharedSteps",
+      duration: 5000,
+      payload: { links: [{ url: "https://x" }], name: "ignored" },
+    });
+    expect(client.calls[0].body).toMatchObject({
+      name: "Auth",
+      entityTypeName: "SharedSteps",
+      duration: 0,
+      links: [{ url: "https://x" }],
+    });
+  });
+
+  it("create_work_item requires a name", async () => {
+    const { call } = setup();
+    await expect(call("create_work_item", { projectId: "p1" })).rejects.toThrow('"name" is required.');
+  });
+
   it("list_projects uses POST /projects/search with a filter", async () => {
     const { client, call } = setup();
     await call("list_projects", { name: "sigma", isDeleted: false, take: 5 });

@@ -5,6 +5,7 @@ import {
   asObject,
   buildWorkItemFilter,
   getOptionalObjectPayload,
+  getOptionalNumber,
   getOptionalString,
   getOptionalStringArray,
   getRequiredString,
@@ -13,7 +14,70 @@ import {
   pickPagination,
   resolveProjectId,
   WORK_ITEM_FILTER_PROPERTIES,
+  type ToolArgs,
 } from "./utils.js";
+
+const STEPS_SCHEMA = {
+  type: "array",
+  items: {
+    type: "object",
+    properties: {
+      action: { type: "string" },
+      expected: { type: "string" },
+      testData: { type: "string" },
+      comments: { type: "string" },
+      workItemId: { type: "string", description: "Shared step UUID to reference instead of an action." },
+    },
+  },
+} as const;
+
+const DEFAULT_DURATION_MS = 60000;
+
+async function buildCreateWorkItemBody(
+  args: ToolArgs,
+  client: TestITApiClient,
+): Promise<Record<string, unknown>> {
+  const raw = { ...(getOptionalObjectPayload(args, "payload") ?? {}) };
+  const entityTypeName =
+    getOptionalString(args, "entityTypeName") ?? (raw.entityTypeName as string | undefined) ?? "TestCases";
+  let projectId = getOptionalString(args, "projectId") ?? (raw.projectId as string | undefined);
+  if (!projectId) {
+    projectId = await resolveProjectId(args, client);
+  }
+  const name = getOptionalString(args, "name") ?? (raw.name as string | undefined);
+  if (!name) {
+    throw new Error("\"name\" is required.");
+  }
+  const tagNames = getOptionalStringArray(args, "tags");
+  let duration = getOptionalNumber(args, "duration") ?? (raw.duration as number | undefined);
+  if (entityTypeName === "SharedSteps") {
+    duration = 0;
+  } else if (duration === undefined) {
+    duration = DEFAULT_DURATION_MS;
+  }
+
+  const typed: Record<string, unknown> = {
+    projectId,
+    name,
+    entityTypeName,
+    state: getOptionalString(args, "state") ?? raw.state ?? "NotReady",
+    priority: getOptionalString(args, "priority") ?? raw.priority ?? "Medium",
+    duration,
+    sectionId: getOptionalString(args, "sectionId"),
+    description: getOptionalString(args, "description"),
+    tags: tagNames?.map((tag) => ({ name: tag })),
+    preconditionSteps: args.preconditionSteps,
+    steps: args.steps,
+    postconditionSteps: args.postconditionSteps,
+    attributes: getOptionalObjectPayload(args, "attributes"),
+  };
+  for (const [key, value] of Object.entries(typed)) {
+    if (value !== undefined) {
+      raw[key] = value;
+    }
+  }
+  return raw;
+}
 
 export function createWorkItemTools(
   client: TestITApiClient,
@@ -68,13 +132,34 @@ export function createWorkItemTools(
     },
     {
       name: "create_work_item",
-      description: "Create a new work item.",
+      description:
+        "Create a test case, checklist or shared step. Defaults: entityTypeName=TestCases, " +
+        "state=NotReady, priority=Medium, duration=60000 ms (always 0 for SharedSteps — required by TestIT). " +
+        "Extra CreateWorkItemApiModel fields can be passed in \"payload\".",
       inputSchema: {
         type: "object" as const,
         properties: {
-          payload: { type: "object", additionalProperties: true },
+          projectId: { type: "string", description: "Project UUID (defaults to TESTIT_PROJECT_ID)." },
+          projectName: { type: "string", description: "Project name (alternative to projectId)." },
+          name: { type: "string", description: "Work item name." },
+          entityTypeName: { type: "string", enum: ["TestCases", "CheckLists", "SharedSteps"] },
+          state: { type: "string", enum: ["NeedsWork", "NotReady", "Ready"] },
+          priority: { type: "string", enum: ["Lowest", "Low", "Medium", "High", "Highest"] },
+          duration: { type: "number", description: "Duration in ms (1..86400000; 0 for SharedSteps)." },
+          sectionId: { type: "string", description: "Section UUID (root section if omitted)." },
+          description: { type: "string" },
+          tags: { type: "array", items: { type: "string" }, description: "Tag names." },
+          preconditionSteps: STEPS_SCHEMA,
+          steps: STEPS_SCHEMA,
+          postconditionSteps: STEPS_SCHEMA,
+          attributes: { type: "object", additionalProperties: true, description: "Custom attributes {attributeId: value}." },
+          payload: {
+            type: "object",
+            additionalProperties: true,
+            description: "Raw CreateWorkItemApiModel fields; typed args take precedence.",
+          },
         },
-        required: ["payload"],
+        required: ["name"],
       },
     },
     {
@@ -183,11 +268,7 @@ export function createWorkItemTools(
     },
     create_work_item: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);
-      const payload = (args.payload as Record<string, unknown>) || {};
-      if (!payload.projectId && client.defaultProjectId) {
-        payload.projectId = client.defaultProjectId;
-      }
-      return api.createWorkItem(client, payload);
+      return api.createWorkItem(client, await buildCreateWorkItemBody(args, client));
     },
     update_work_item: async (rawArgs: unknown) => {
       const args = asObject(rawArgs);

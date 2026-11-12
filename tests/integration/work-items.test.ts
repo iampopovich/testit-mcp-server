@@ -14,32 +14,33 @@ describe.skipIf(!integrationEnabled)("integration: work items listing", () => {
 
   beforeAll(async () => {
     testCase = await callTool<WorkItem>("create_work_item", {
-      payload: {
-        projectId: getProjectId(),
-        name: `${prefix}-case`,
-        entityTypeName: "TestCases",
-        state: "Ready",
-        priority: "Medium",
-        duration: 1000,
-        steps: [{ action: "open", expected: "opened" }],
-      },
+      name: `${prefix}-case`,
+      state: "Ready",
+      tags: ["mcp-it"],
+      steps: [{ action: "open", expected: "opened" }],
     });
+    // No duration given: the tool must force 0 for SharedSteps (TestIT rejects anything else).
     sharedStep = await callTool<WorkItem>("create_work_item", {
-      payload: {
-        projectId: getProjectId(),
-        name: `${prefix}-shared`,
-        entityTypeName: "SharedSteps",
-        state: "Ready",
-        priority: "Medium",
-        duration: 0,
-        steps: [{ action: "login", expected: "logged in" }],
-      },
+      name: `${prefix}-shared`,
+      entityTypeName: "SharedSteps",
+      steps: [{ action: "login", expected: "logged in" }],
     });
   });
 
   afterAll(async () => {
     await callSafe("delete_work_item", { id: testCase?.id });
     await callSafe("delete_work_item", { id: sharedStep?.id });
+  });
+
+  it("create_work_item applies defaults and typed tags into the project", async () => {
+    const created = await callTool<WorkItem & { duration: number; state: string; tags: Array<{ name: string }> }>(
+      "get_work_item",
+      { id: testCase.id },
+    );
+    expect(created.entityTypeName).toBe("TestCases");
+    expect(created.state).toBe("Ready");
+    expect(created.duration).toBe(60000);
+    expect(created.tags.map((t) => t.name)).toEqual(["mcp-it"]);
   });
 
   it("list_work_items filters by name and type", async () => {
