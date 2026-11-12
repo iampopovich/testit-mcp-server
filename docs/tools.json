@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-12T08:12:09.477Z",
-  "totalTools": 52,
+  "generatedAt": "2026-11-12T08:13:41.896Z",
+  "totalTools": 57,
   "categories": [
     {
       "name": "Projects",
@@ -1634,7 +1634,8 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": "string",
+                "description": "Test plan UUID."
               }
             },
             "required": [
@@ -1648,17 +1649,55 @@
         },
         {
           "name": "create_test_plan",
-          "description": "Create a new test plan.",
+          "description": "Create a test plan (status New). Extra CreateTestPlanApiModel fields can be passed in \"payload\".",
           "inputSchema": {
             "type": "object",
             "properties": {
+              "projectId": {
+                "type": "string",
+                "description": "Project UUID (defaults to TESTIT_PROJECT_ID)."
+              },
+              "projectName": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "build": {
+                "type": "string"
+              },
+              "productName": {
+                "type": "string"
+              },
+              "startDate": {
+                "type": "string",
+                "description": "ISO date-time."
+              },
+              "endDate": {
+                "type": "string",
+                "description": "ISO date-time."
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names."
+              },
+              "attributes": {
+                "type": "object",
+                "additionalProperties": true
+              },
               "payload": {
                 "type": "object",
                 "additionalProperties": true
               }
             },
             "required": [
-              "payload"
+              "name"
             ]
           },
           "annotations": {
@@ -1670,7 +1709,7 @@
         },
         {
           "name": "update_test_plan",
-          "description": "Update an existing test plan (PUT).",
+          "description": "Replace a test plan (PUT). Requires id, name, projectId in payload; fields not sent are cleared.",
           "inputSchema": {
             "type": "object",
             "properties": {
@@ -1691,8 +1730,165 @@
           }
         },
         {
+          "name": "set_test_plan_state",
+          "description": "Change test plan status: start (-> InProgress), pause (-> Paused), complete (-> Completed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test plan UUID."
+              },
+              "action": {
+                "type": "string",
+                "enum": [
+                  "start",
+                  "pause",
+                  "complete"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "action"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "create_test_plan_clone",
+          "description": "Clone a test plan (copy named \"<name> (1)\", status New). Returns the new plan.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Source test plan UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": false,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "list_test_plan_test_runs",
+          "description": "List test runs of a test plan, optionally filtered by state.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test plan UUID."
+              },
+              "notStarted": {
+                "type": "boolean"
+              },
+              "inProgress": {
+                "type": "boolean"
+              },
+              "stopped": {
+                "type": "boolean"
+              },
+              "completed": {
+                "type": "boolean"
+              },
+              "skip": {
+                "type": "number",
+                "description": "Number of items to skip (offset)."
+              },
+              "take": {
+                "type": "number",
+                "description": "Max number of items to return."
+              },
+              "page": {
+                "type": "number",
+                "description": "1-based page number; alternative to skip. Uses \"size\" (default 50)."
+              },
+              "size": {
+                "type": "number",
+                "description": "Page size for \"page\"; alias of take."
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Sort expression, e.g. \"createdDate desc\"."
+              },
+              "searchField": {
+                "type": "string",
+                "description": "Field name to search in."
+              },
+              "searchValue": {
+                "type": "string",
+                "description": "Value to search for in searchField."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
           "name": "delete_test_plan",
-          "description": "Delete a test plan by ID.",
+          "description": "Delete (archive) a test plan. Use restore_test_plan to undo or purge_test_plan to remove it for good.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test plan UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": true,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "restore_test_plan",
+          "description": "Restore an archived (deleted) test plan.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Test plan UUID."
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": true
+          }
+        },
+        {
+          "name": "purge_test_plan",
+          "description": "Permanently delete an archived test plan. Irreversible; delete (archive) it first.",
           "inputSchema": {
             "type": "object",
             "properties": {
