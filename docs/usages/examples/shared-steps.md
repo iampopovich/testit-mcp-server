@@ -1,90 +1,80 @@
 # Shared Steps Example
 
-## Example User Prompts
+A shared step is a work item with `entityTypeName: "SharedSteps"`. Test cases reference it from a step via `workItemId` instead of an `action`.
 
-- `Show me the steps inside shared step 15 — I need to read the full procedure.`
-- `List all shared steps in project 37.`
-- `Which test cases use shared step 15? I want to check the impact before I edit it.`
-- `Archive shared step 22 — it's been replaced.`
+## Example User Prompt
+
+`Create a shared step "Log in as standard user", use it as the first step of a new test case, and show where it is used.`
 
 ## Typical Tools
 
 - `list_shared_steps`
 - `get_shared_step`
-- `get_shared_step_steps`
-- `get_shared_step_usage`
-- `create_shared_step`
-- `update_shared_step`
-- `archive_shared_step`
-- `unarchive_shared_step`
+- `create_work_item`
+- `set_work_item`
+- `list_shared_step_references`
 
 ## Example Calls
 
-List the shared step library for a project:
+List shared steps of a project:
 
 ```json
 {
   "name": "list_shared_steps",
   "arguments": {
-    "projectId": 37,
-    "size": 50
+    "projectId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "Log in",
+    "take": 20
   }
 }
 ```
 
-Read the full step content of a shared step (resolves `sharedStepId` references):
+Create a shared step:
 
 ```json
 {
-  "name": "get_shared_step_steps",
+  "name": "create_work_item",
   "arguments": {
-    "id": 15
+    "entityTypeName": "SharedSteps",
+    "name": "Log in as standard user",
+    "steps": [
+      { "action": "Open /login", "expected": "Login form is shown" },
+      { "action": "Submit valid credentials", "expected": "Dashboard is shown" }
+    ]
   }
 }
 ```
 
-Check impact before editing — which test cases reference this shared step:
+The server always sends `duration: 0` for shared steps, as Test IT requires.
+
+Use it in a test case:
 
 ```json
 {
-  "name": "get_shared_step_usage",
+  "name": "create_work_item",
   "arguments": {
-    "id": 15,
-    "size": 100
+    "name": "Profile - change display name",
+    "steps": [
+      { "workItemId": "d41f8a2c-7e6b-4c3d-9a1e-2b5f0c8d7e32" },
+      { "action": "Change display name and save", "expected": "New name is shown in the header" }
+    ]
   }
 }
 ```
 
-Create a new shared step:
+Where is it used:
 
 ```json
 {
-  "name": "create_shared_step",
+  "name": "list_shared_step_references",
   "arguments": {
-    "payload": {
-      "name": "Login as admin user",
-      "projectId": 37
-    }
-  }
-}
-```
-
-Archive an outdated shared step:
-
-```json
-{
-  "name": "archive_shared_step",
-  "arguments": {
-    "id": 22
+    "id": "d41f8a2c-7e6b-4c3d-9a1e-2b5f0c8d7e32",
+    "target": "workItems"
   }
 }
 ```
 
 ## Notes
 
-- When `get_test_case_steps` returns a step with a `sharedStepId` field, call `get_shared_step_steps` with that ID to inline the actual step body.
-- Always run `get_shared_step_usage` before archiving or editing — a shared step may be referenced by many test cases.
-- Archived shared steps are hidden from the active library but remain readable. Use `unarchive_shared_step` to restore them.
-- `list_shared_steps` accepts `archived: true` to list only archived steps.
-
-
+- `list_shared_step_references` with `target: "sections"` lists sections that use the step in their pre/postconditions.
+- Rename or re-prioritize a shared step with `set_work_item`; it is a regular work item.

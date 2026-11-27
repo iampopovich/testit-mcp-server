@@ -17,10 +17,12 @@ npm run build
 ## 2) Set Environment Variables
 
 ```bash
-export TESTIT_URL="https://your-TestIT-instance.com"
+export TESTIT_URL="https://your-testit-instance"
 export TESTIT_TOKEN="your-api-token"
 # Optional:
-export TESTIT_PROJECT_ID="37"
+export TESTIT_PROJECT_ID="your-project-uuid"
+# export TESTIT_READ_ONLY=true
+# export TESTIT_TOOLSETS=default,admin
 ```
 
 ## 3) Run
@@ -66,11 +68,9 @@ Each tool includes ready payload examples:
   "command": "node",
   "args": ["/absolute/path/to/testit-mcp-server/dist/index.js"],
   "env": {
-    "TESTIT_URL": "https://your-TestIT-instance.com",
+    "TESTIT_URL": "https://your-testit-instance",
     "TESTIT_TOKEN": "your-api-token",
-    "TESTIT_PROJECT_ID": "37"
+    "TESTIT_PROJECT_ID": "your-project-uuid"
   }
 }
 ```
-
-

@@ -5,96 +5,98 @@ Goal: reduce repetitive discovery calls by giving the model stable defaults and 
 
 ## When This Helps
 
-- You always work in one default TestIT project
-- You repeatedly use the same test layers/scopes
-- You already know key custom fields and value dictionaries
+- You always work in one default Test IT project
+- You repeatedly use the same sections and configurations
+- You already know key custom attribute ids and option ids
 - You want fewer "list first, then act" tool calls
 
 ## Recommended Setup
 
-1. Set `TESTIT_PROJECT_ID` in MCP server env (server-side default scope).
-2. Keep a small client-side metadata cache:
+1. Set `TESTIT_PROJECT_ID` (project UUID) in the MCP server env (server-side default scope).
+2. Optionally narrow the tool list with `TESTIT_TOOLSETS` (e.g. `work-items,sections,test-plans,test-suites,test-runs,test-results`) or set `TESTIT_READ_ONLY=true` for reporting-only sessions. Fewer tools means a shorter tool list in every request.
+3. Keep a small client-side metadata cache:
    - project id/name
-   - test layer definitions used by your team
-   - custom field ids and value ids
-3. Inject the cache into system prompt context on each chat/session.
-4. Refresh cache only when stale (for example: every 24h, or on "not found" errors).
+   - section ids your team uses
+   - configuration ids
+   - custom attribute ids and option ids
+4. Inject the cache into system prompt context on each chat/session.
+5. Refresh cache only when stale (for example: every 24h, or on "not found" errors).
 
 ## Copy-Paste System Prompt Template
 
 ```text
-You are an assistant operating against the TestIT MCP server.
+You are an assistant operating against the Test IT MCP server.
 
 Execution rules:
 1) Prefer direct action with known IDs/defaults. Avoid exploratory list calls unless needed.
 2) If project scope is missing in user request, use defaultProjectId from context.
 3) If an operation fails with not found/validation around ids, do one discovery call, update context, then retry once.
 4) Keep tool calls minimal: do not call list/search endpoints when exact ids are already known.
-5) Return concise results: what changed, identifiers used, and any follow-up needed.
+5) Prefer set_* (partial update) over update_* (full replacement that clears omitted fields).
+6) Return concise results: what changed, identifiers used, and any follow-up needed.
 
 Project context:
-- defaultProjectId: {{DEFAULT_PROJECT_ID}}
+- defaultProjectId: {{DEFAULT_PROJECT_UUID}}
 - defaultProjectName: "{{DEFAULT_PROJECT_NAME}}"
 
-Known test layers (team vocabulary):
-- "{{LAYER_1}}"
-- "{{LAYER_2}}"
-- "{{LAYER_3}}"
+Known sections:
+- "{{SECTION_1}}" (id: {{SECTION_ID_1}})
+- "{{SECTION_2}}" (id: {{SECTION_ID_2}})
 
-Known custom fields and values:
-- "{{CF_NAME_1}}" (id: {{CF_ID_1}})
-  - "{{CF_VALUE_1}}" (id: {{CF_VALUE_ID_1}})
-  - "{{CF_VALUE_2}}" (id: {{CF_VALUE_ID_2}})
-- "{{CF_NAME_2}}" (id: {{CF_ID_2}})
-  - "{{CF_VALUE_1}}" (id: {{CF_VALUE_ID_1}})
+Known configurations:
+- "{{CONFIGURATION_1}}" (id: {{CONFIGURATION_ID_1}})
+
+Known custom attributes and options:
+- "{{ATTR_NAME_1}}" (id: {{ATTR_ID_1}})
+  - "{{OPTION_1}}" (id: {{OPTION_ID_1}})
+  - "{{OPTION_2}}" (id: {{OPTION_ID_2}})
 
 Tooling hints:
-- For test cases: list_test_cases, search_test_cases, get_test_case, create_test_case, update_test_case
-- For launches: list_launches, create_launch, update_launch, get_launch_progress
-- For test results: list_test_results, search_test_results, get_test_result, resolve_test_result
-- For test plans: list_test_plans, get_test_plan, run_test_plan
-- For custom fields: list_project_custom_fields, list_custom_field_values, get_test_case_custom_fields, set_test_case_custom_fields
+- Test cases, checklists, shared steps: list_work_items, search_work_items, get_work_item, create_work_item, set_work_item, move_work_item
+- Sections: list_sections, create_section, move_section
+- Test plans and suites: list_test_plans, create_test_plan, set_test_plan_state, create_test_suite, set_test_suite_work_items, list_test_suite_test_points
+- Test runs: list_test_runs, create_test_run, create_test_run_from_work_items, start_test_run, complete_test_run
+- Test results: get_test_run_results, search_test_results, set_test_result, submit_test_run_results
+- Autotests: search_autotests, create_autotest, link_autotest_work_item
+- Custom attributes: list_project_attributes (pass values as attributes {attributeId: value})
+- Status codes: list_test_statuses
 
 Behavior on ambiguity:
 - If multiple matches are plausible, ask one short clarification question before writing data.
-- If user asks for "latest", use sort by recent update/create where applicable.
+- If user asks for "latest", use orderBy "createdDate desc" where applicable.
 ```
 
 ## Example With Real Values
 
 ```text
 Project context:
-- defaultProjectId: 37
+- defaultProjectId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
 - defaultProjectName: "Web Platform QA"
 
-Known test layers (team vocabulary):
-- "API"
-- "UI"
-- "E2E"
+Known sections:
+- "Checkout" (id: 6b1e2c9a-1f4d-4c1a-9e2b-7d3f0a5c8e11)
+- "Payments" (id: f0e1d2c3-b4a5-4968-8776-655443322110)
 
-Known custom fields and values:
-- "Priority" (id: 11)
-  - "High" (id: 101)
-  - "Medium" (id: 102)
-  - "Low" (id: 103)
-- "Layer" (id: 15)
-  - "API" (id: 301)
-  - "UI" (id: 302)
-  - "E2E" (id: 303)
+Known configurations:
+- "Chrome / Linux" (id: 7c6b5a49-3e2d-4f1c-8b0a-9e8d7c6b5a77)
+
+Known custom attributes and options:
+- "Layer" (id: a7b8c9d0-e1f2-4a3b-8c4d-5e6f7a8b9cdd)
+  - "API" (id: e3d2c1b0-a9f8-4e7d-8c6b-5a4f3e2d1c0b)
+  - "UI" (id: 0b1c2d3e-4f5a-4b6c-9d7e-8f9a0b1c2d3e)
 ```
 
 ## Minimal Cache Refresh Playbook
 
 - Initial bootstrap (once):
-  - `list_project_custom_fields`
-  - `list_custom_field_values` for fields you actively use
+  - `list_sections`
+  - `list_configurations`
+  - `list_project_attributes`
 - Regular work:
   - use cached ids in write/read operations
 - Refresh triggers:
   - id not found
-  - validation says value does not belong to field
+  - validation says a value does not belong to the attribute
   - scheduled TTL expiry
 
 This pattern keeps prompts and tool usage predictable while reducing unnecessary MCP calls.
-
-

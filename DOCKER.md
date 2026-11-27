@@ -1,13 +1,15 @@
-# Docker Deployment Guide for TestIT MCP Server
+# Docker Deployment Guide for Test IT MCP Server
 
-This guide explains how to build, publish, and use the TestIT MCP server as a Docker container.
+This guide explains how to build and run the Test IT MCP server as a Docker container.
+
+No prebuilt image is published to a registry. Build the image locally from this repository; every command below uses the local image name `testit-mcp-server`.
 
 ## Prerequisites
 
 - Docker installed (Docker Desktop or Docker Engine)
-- Docker Hub account (for publishing)
-- TestIT instance with API access
-- API token from TestIT
+- A checkout of this repository
+- Test IT instance with API access
+- Private API token from your Test IT profile
 
 ## Building the Docker Image
 
@@ -18,76 +20,24 @@ The Dockerfile uses a multi-stage build process to create an optimized productio
 ### Build Locally
 
 ```bash
-docker build -t testit-mcp-server:latest .
+docker build -t testit-mcp-server .
 ```
 
 ### Build with Version Tag
 
 ```bash
-docker build -t testit-mcp-server:1.0.0 -t testit-mcp-server:latest .
+docker build -t testit-mcp-server:0.2.0 -t testit-mcp-server .
 ```
 
-## Publishing to Docker Hub
+## Environment Variables
 
-### 1. Log in to Docker Hub
-
-```bash
-docker login
-```
-
-Enter your Docker Hub username and password when prompted.
-
-### 2. Tag the Image
-
-Replace `YOUR_DOCKERHUB_USERNAME` with your actual Docker Hub username:
-
-```bash
-docker tag testit-mcp-server:latest YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
-docker tag testit-mcp-server:latest YOUR_DOCKERHUB_USERNAME/testit-mcp-server:1.0.0
-```
-
-### 3. Push to Docker Hub
-
-```bash
-docker push YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
-docker push YOUR_DOCKERHUB_USERNAME/testit-mcp-server:1.0.0
-```
-
-### Complete Build and Push Script
-
-Create a `build-and-push.sh` script:
-
-```bash
-#!/bin/bash
-
-# Configuration
-DOCKERHUB_USERNAME="YOUR_DOCKERHUB_USERNAME"
-IMAGE_NAME="testit-mcp-server"
-VERSION="1.0.0"
-
-# Build the image
-echo "Building Docker image..."
-docker build -t ${IMAGE_NAME}:${VERSION} -t ${IMAGE_NAME}:latest .
-
-# Tag for Docker Hub
-echo "Tagging image for Docker Hub..."
-docker tag ${IMAGE_NAME}:${VERSION} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${VERSION}
-docker tag ${IMAGE_NAME}:latest ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest
-
-# Push to Docker Hub
-echo "Pushing to Docker Hub..."
-docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${VERSION}
-docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest
-
-echo "Done! Image available at: ${DOCKERHUB_USERNAME}/${IMAGE_NAME}"
-```
-
-Make it executable and run:
-
-```bash
-chmod +x build-and-push.sh
-./build-and-push.sh
-```
+| Variable | Required | Description |
+|---|---|---|
+| `TESTIT_URL` | yes | Base URL of your Test IT instance, e.g. `https://your-testit-instance`. |
+| `TESTIT_TOKEN` | yes | Test IT private API token. |
+| `TESTIT_PROJECT_ID` | no | Default project UUID. Without it, project-scoped tools take `projectId` or `projectName`. |
+| `TESTIT_READ_ONLY` | no | `true` exposes only list/get/search tools. |
+| `TESTIT_TOOLSETS` | no | Comma-separated toolsets, e.g. `default,admin`. |
 
 ## Running the Container
 
@@ -96,56 +46,54 @@ chmod +x build-and-push.sh
 #### Basic Usage
 
 ```bash
-docker run -i \
-  -e TESTIT_URL=https://your-TestIT-instance.com \
+docker run -i --rm \
+  -e TESTIT_URL=https://your-testit-instance \
   -e TESTIT_TOKEN=your-api-token \
-  -e PROJECT_ID=1 \
-  YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
+  -e TESTIT_PROJECT_ID=your-project-uuid \
+  testit-mcp-server
 ```
 
 #### Run in Background
 
 ```bash
-docker run -d --name TestIT-mcp -i \
-  -e TESTIT_URL=https://your-TestIT-instance.com \
+docker run -d --name testit-mcp -i \
+  -e TESTIT_URL=https://your-testit-instance \
   -e TESTIT_TOKEN=your-api-token \
-  -e PROJECT_ID=1 \
+  -e TESTIT_PROJECT_ID=your-project-uuid \
   --restart unless-stopped \
-  YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
+  testit-mcp-server
 ```
 
 ### Using Docker Compose
 
-Update the `docker-compose.yml` file to use your published image:
+The `docker-compose.yml` in the repository builds the image from the local Dockerfile (`build: .`). A minimal service definition looks like this:
 
 ```yaml
-version: '3.8'
-
 services:
   testit-mcp-server:
-    image: YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
+    build: .
+    image: testit-mcp-server
     container_name: testit-mcp-server
     environment:
-      - TESTIT_URL=${TESTIT_URL:-https://testit.labs.jb.gg}
+      - TESTIT_URL=${TESTIT_URL}
       - TESTIT_TOKEN=${TESTIT_TOKEN}
-      - PROJECT_ID=${PROJECT_ID}
+      - TESTIT_PROJECT_ID=${TESTIT_PROJECT_ID}
     restart: unless-stopped
     stdin_open: true
-    tty: true
 ```
 
 Create a `.env` file in the same directory:
 
 ```bash
-TESTIT_URL=https://your-TestIT-instance.com
+TESTIT_URL=https://your-testit-instance
 TESTIT_TOKEN=your-api-token-here
-PROJECT_ID=1
+TESTIT_PROJECT_ID=your-project-uuid
 ```
 
-Run with Docker Compose:
+Build and run with Docker Compose:
 
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
 
 ## Configuring MCP Clients
@@ -164,12 +112,12 @@ Add to your MCP client configuration (`~/Library/Application Support/Claude/clau
         "-i",
         "--rm",
         "-e",
-        "TESTIT_URL=https://your-TestIT-instance.com",
+        "TESTIT_URL=https://your-testit-instance",
         "-e",
         "TESTIT_TOKEN=your-api-token",
         "-e",
-        "PROJECT_ID=1",
-        "YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest"
+        "TESTIT_PROJECT_ID=your-project-uuid",
+        "testit-mcp-server"
       ]
     }
   }
@@ -191,7 +139,7 @@ If you prefer to keep credentials in a `.env` file on the host:
         "--rm",
         "--env-file",
         "/path/to/your/.env",
-        "YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest"
+        "testit-mcp-server"
       ]
     }
   }
@@ -201,9 +149,9 @@ If you prefer to keep credentials in a `.env` file on the host:
 Create `.env` file with:
 
 ```bash
-TESTIT_URL=https://your-TestIT-instance.com
+TESTIT_URL=https://your-testit-instance
 TESTIT_TOKEN=your-api-token-here
-PROJECT_ID=1
+TESTIT_PROJECT_ID=your-project-uuid
 ```
 
 ### Using Docker Compose Service
@@ -235,28 +183,28 @@ Note: The container must be running before starting the MCP client.
 
 ```bash
 # Run interactively
-docker run -i \
-  -e TESTIT_URL=https://your-instance.com \
+docker run -i --rm \
+  -e TESTIT_URL=https://your-testit-instance \
   -e TESTIT_TOKEN=your-token \
-  -e PROJECT_ID=1 \
-  YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
+  -e TESTIT_PROJECT_ID=your-project-uuid \
+  testit-mcp-server
 ```
 
-You should see:
+You should see on stderr:
 ```
-TestIT MCP Server running on stdio
+TestIT MCP server started.
 ```
 
 ### Check Image Size
 
 ```bash
-docker images YOUR_DOCKERHUB_USERNAME/testit-mcp-server
+docker images testit-mcp-server
 ```
 
 ### Inspect Image Layers
 
 ```bash
-docker history YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
+docker history testit-mcp-server
 ```
 
 ## Troubleshooting
@@ -265,15 +213,19 @@ docker history YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
 
 Make sure to use the `-i` flag (interactive mode) as the MCP server uses stdio for communication.
 
+### `Unable to find image 'testit-mcp-server:latest' locally`
+
+The image is not on any registry. Run `docker build -t testit-mcp-server .` in the repository first.
+
 ### Authentication Errors
 
 Verify your environment variables:
 ```bash
 docker run --rm \
-  -e TESTIT_URL=https://your-instance.com \
+  -e TESTIT_URL=https://your-testit-instance \
   -e TESTIT_TOKEN=your-token \
-  -e PROJECT_ID=1 \
-  YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest \
+  -e TESTIT_PROJECT_ID=your-project-uuid \
+  testit-mcp-server \
   node -e "console.log(process.env.TESTIT_URL)"
 ```
 
@@ -287,10 +239,10 @@ docker logs testit-mcp-server
 
 ```bash
 docker run -it --rm \
-  -e TESTIT_URL=https://your-instance.com \
+  -e TESTIT_URL=https://your-testit-instance \
   -e TESTIT_TOKEN=your-token \
-  -e PROJECT_ID=1 \
-  YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest \
+  -e TESTIT_PROJECT_ID=your-project-uuid \
+  testit-mcp-server \
   sh
 ```
 
@@ -300,87 +252,41 @@ docker run -it --rm \
 2. **Use secrets management**: For production, use Docker secrets or vault solutions
 3. **Scan images**: Regularly scan for vulnerabilities
    ```bash
-   docker scan YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
+   docker scout cves testit-mcp-server
    ```
-4. **Keep images updated**: Rebuild regularly to get security updates
-5. **Use specific tags**: Avoid relying on `:latest` in production
+4. **Keep images updated**: Rebuild regularly to get security updates of the `node:20-alpine` base
+5. **Use specific tags**: Tag builds with the version (`testit-mcp-server:0.2.0`) instead of relying on `:latest`
 
 ## Updating the Image
 
-When you make changes to the code:
+When you pull new code or make changes:
 
 ```bash
-# Rebuild
-docker build -t YOUR_DOCKERHUB_USERNAME/testit-mcp-server:1.1.0 .
-
-# Tag as latest
-docker tag YOUR_DOCKERHUB_USERNAME/testit-mcp-server:1.1.0 \
-           YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
-
-# Push both tags
-docker push YOUR_DOCKERHUB_USERNAME/testit-mcp-server:1.1.0
-docker push YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
+git pull
+docker build -t testit-mcp-server:0.2.1 -t testit-mcp-server .
 ```
 
-## Multi-Architecture Builds (Optional)
+## Building for Another Architecture (Optional)
 
-To support multiple platforms (amd64, arm64):
+To build for a different platform (for example arm64 on an amd64 host) and load it into the local image store:
 
 ```bash
-# Create builder
-docker buildx create --name multiarch --use
-
-# Build and push for multiple platforms
-docker buildx build --platform linux/amd64,linux/arm64 \
-  -t YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest \
-  -t YOUR_DOCKERHUB_USERNAME/testit-mcp-server:1.0.0 \
-  --push .
+docker buildx build --platform linux/arm64 -t testit-mcp-server --load .
 ```
 
-## Client Deployment Examples
+## Using the Image on Several Machines
 
-### Deploy on Multiple Machines
-
-1. Push image to Docker Hub (once)
-2. On each client machine:
+There is no registry image to pull, so either build on each machine or move the image:
 
 ```bash
-# Pull the image
-docker pull YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
+# On the build machine
+docker save testit-mcp-server | gzip > testit-mcp-server.tar.gz
 
-# Create .env file with credentials
-cat > .env << EOF
-TESTIT_URL=https://your-instance.com
-TESTIT_TOKEN=your-token
-PROJECT_ID=1
-EOF
-
-# Configure MCP client (Claude Desktop, etc.)
-# Use the docker command with --env-file flag
+# On the target machine
+docker load < testit-mcp-server.tar.gz
 ```
 
-### Automated Deployment Script
-
-Create `deploy-client.sh`:
-
-```bash
-#!/bin/bash
-
-# Pull latest image
-docker pull YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
-
-# Stop and remove old container if exists
-docker stop TestIT-mcp 2>/dev/null || true
-docker rm TestIT-mcp 2>/dev/null || true
-
-# Run new container
-docker run -d --name TestIT-mcp -i \
-  --env-file .env \
-  --restart unless-stopped \
-  YOUR_DOCKERHUB_USERNAME/testit-mcp-server:latest
-
-echo "TestIT MCP server deployed successfully"
-```
+If you push the image to your own private registry, replace `testit-mcp-server` in the commands above with your registry path.
 
 ## Support
 
@@ -388,5 +294,4 @@ For issues or questions:
 - Check the main README.md for usage details
 - Review Docker logs: `docker logs testit-mcp-server`
 - Verify environment variables are set correctly
-- Ensure TestIT instance is accessible from the container
-
+- Ensure the Test IT instance is accessible from the container

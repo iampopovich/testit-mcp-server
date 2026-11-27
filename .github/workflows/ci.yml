@@ -34,3 +34,12 @@ jobs:
 
       - name: Test
         run: npm run test
+
+      - name: Validate MCPB manifest
+        run: npx -y @anthropic-ai/mcpb validate manifest.json
+
+      - name: Check registry metadata matches package.json
+        run: |
+          test "$(jq -r .mcpName package.json)" = "$(jq -r .name server.json)"
+          test "$(jq -r .name package.json)" = "$(jq -r '.packages[0].identifier' server.json)"
+          test "$(jq -r .name package.json)" = "$(jq -r .name manifest.json)"

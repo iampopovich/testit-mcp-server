@@ -1,17 +1,23 @@
-name: Publish to npm
+name: Publish
+
+# Runs when a GitHub release is published (tag vX.Y.Z must match package.json):
+#   1. npm      - publishes the package (npm trusted publishing via OIDC, or NPM_TOKEN secret)
+#   2. registry - publishes server.json to the official MCP Registry (GitHub OIDC, no secrets)
+#   3. mcpb     - builds a one-click MCPB bundle (Claude Desktop, Smithery) and attaches it to the release
 
 on:
-  workflow_dispatch: 
   release:
     types: [published]
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
-  publish:
+  npm:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,6 +29,19 @@ jobs:
           cache: npm
           registry-url: https://registry.npmjs.org
 
+      - name: Check that the tag matches package.json
+        run: |
+          PKG_VERSION=$(jq -r .version package.json)
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
+
+      # npm trusted publishing (OIDC) needs npm >= 11.5.1
+      - name: Update npm
+        run: npm install -g npm@latest
+
       - name: Install dependencies
         run: npm ci
 
@@ -32,7 +51,106 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Test
+        run: npm test
+
       - name: Publish
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  registry:
+    needs: npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sync server.json version with package.json
+        run: |
+          VERSION=$(jq -r .version package.json)
+          jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' server.json > server.tmp
+          mv server.tmp server.json
+          cat server.json
+
+      - name: Wait until the npm version is visible
+        run: |
+          NAME=$(jq -r .name package.json)
+          VERSION=$(jq -r .version package.json)
+          EXPECTED=$(jq -r .name server.json)
+          for i in $(seq 1 30); do
+            GOT=$(npm view "$NAME@$VERSION" mcpName 2>/dev/null || true)
+            if [ "$GOT" = "$EXPECTED" ]; then echo "npm has $NAME@$VERSION with mcpName $GOT"; exit 0; fi
+            sleep 10
+          done
+          echo "::error::$NAME@$VERSION with mcpName=$EXPECTED did not appear on npm"
+          exit 1
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Download and verify mcp-publisher
+        run: |
+          set -euo pipefail
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          arch="$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
+          archive="mcp-publisher_${os}_${arch}.tar.gz"
+          base_url="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          curl --fail --location --silent --show-error --output "$archive" "$base_url/$archive"
+          curl --fail --location --silent --show-error --output "$archive.sigstore.json" "$base_url/$archive.sigstore.json"
+          cosign verify-blob \
+            --bundle "$archive.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/${MCP_PUBLISHER_VERSION}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$archive"
+          tar xzf "$archive" mcp-publisher
+          rm -f "$archive" "$archive.sigstore.json"
+
+      - name: Authenticate to MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to MCP Registry
+        run: ./mcp-publisher publish
+
+  mcpb:
+    needs: npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+          # keep only runtime dependencies in the bundle
+          npm ci --omit=dev --ignore-scripts
+
+      - name: Pack MCPB bundle
+        run: |
+          VERSION=$(jq -r .version package.json)
+          NAME=$(jq -r .name package.json)
+          mkdir bundle
+          jq --arg v "$VERSION" '.version = $v' manifest.json > bundle/manifest.json
+          cp -r dist node_modules package.json LICENSE README.md bundle/
+          npx -y @anthropic-ai/mcpb validate bundle/manifest.json
+          npx -y @anthropic-ai/mcpb pack bundle "$NAME.mcpb"
+          echo "MCPB_FILE=$NAME.mcpb" >> "$GITHUB_ENV"
+
+      - name: Attach bundle to the release
+        run: gh release upload "$GITHUB_REF_NAME" "$MCPB_FILE" --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}

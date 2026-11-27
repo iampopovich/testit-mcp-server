@@ -1,0 +1,95 @@
+{
+  "manifest_version": "0.3",
+  "name": "testit-mcp-server",
+  "display_name": "Test IT MCP",
+  "version": "0.2.0",
+  "description": "Test IT test management for AI assistants: work items, test plans, test runs and results.",
+  "long_description": "Connects Claude, Cursor and other MCP clients to a Test IT instance through its v2 API. The assistant can search and edit work items, sections and shared steps, plan and run tests, read results and analytics. Read-only mode and toolset filtering keep it safe and the tool list short.",
+  "author": {
+    "name": "Aleksandr Popov",
+    "url": "https://github.com/iampopovich"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iampopovich/testit-mcp-server.git"
+  },
+  "homepage": "https://github.com/iampopovich/testit-mcp-server#readme",
+  "support": "https://github.com/iampopovich/testit-mcp-server/issues",
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/dist/index.js"
+      ],
+      "env": {
+        "TESTIT_URL": "${user_config.testit_url}",
+        "TESTIT_TOKEN": "${user_config.testit_token}",
+        "TESTIT_PROJECT_ID": "${user_config.project_id}",
+        "TESTIT_READ_ONLY": "${user_config.read_only}",
+        "TESTIT_TOOLSETS": "${user_config.toolsets}"
+      }
+    }
+  },
+  "tools_generated": true,
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "testit",
+    "test-it",
+    "test-management",
+    "test-case-management",
+    "qa",
+    "quality-assurance",
+    "test-automation"
+  ],
+  "license": "MIT",
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  },
+  "user_config": {
+    "testit_url": {
+      "type": "string",
+      "title": "Test IT URL",
+      "description": "Base URL of your Test IT instance, e.g. https://testit.example.com",
+      "required": true
+    },
+    "testit_token": {
+      "type": "string",
+      "title": "API token",
+      "description": "Private API token from your Test IT profile",
+      "sensitive": true,
+      "required": true
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Default project UUID",
+      "description": "Optional. Used when a request does not name a project",
+      "required": false,
+      "default": ""
+    },
+    "read_only": {
+      "type": "boolean",
+      "title": "Read-only mode",
+      "description": "Expose only list/get/search tools",
+      "required": false,
+      "default": false
+    },
+    "toolsets": {
+      "type": "string",
+      "title": "Toolsets",
+      "description": "Optional comma-separated toolsets, e.g. default,admin. Empty = default",
+      "required": false,
+      "default": ""
+    }
+  }
+}

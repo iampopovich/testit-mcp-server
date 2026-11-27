@@ -1,8 +1,9 @@
 {
   "name": "testit-mcp-server",
   "version": "0.2.0",
+  "mcpName": "io.github.iampopovich/testit-mcp-server",
   "supportedApiVersion": "",
-  "description": "MCP server for TestIT (WorkItems, TestRuns, TestPlans)",
+  "description": "Test IT test management for AI assistants: work items, test plans, test runs and results.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -25,14 +26,22 @@
   },
   "keywords": [
     "mcp",
+    "mcp-server",
     "model-context-protocol",
     "testit",
+    "test-it",
+    "test-management",
+    "test-case-management",
+    "qa",
     "quality-assurance",
     "test-automation",
-    "test-management",
+    "testing",
+    "ai-tools",
+    "llm",
+    "claude",
+    "cursor",
     "typescript",
     "test-automation-tools",
-    "test-case-management",
     "test-execution",
     "test-reporting",
     "llm-integration",
@@ -61,5 +70,8 @@
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

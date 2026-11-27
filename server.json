@@ -1,0 +1,60 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.iampopovich/testit-mcp-server",
+  "title": "Test IT",
+  "description": "Test IT test management for AI assistants: work items, test plans, test runs and results.",
+  "repository": {
+    "url": "https://github.com/iampopovich/testit-mcp-server",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/iampopovich/testit-mcp-server#readme",
+  "version": "0.2.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "testit-mcp-server",
+      "version": "0.2.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "TESTIT_URL",
+          "description": "Base URL of your Test IT instance, e.g. https://testit.example.com",
+          "isRequired": true,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "TESTIT_TOKEN",
+          "description": "Test IT private API token (sent as PrivateToken)",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "TESTIT_PROJECT_ID",
+          "description": "Optional default project UUID",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "TESTIT_READ_ONLY",
+          "description": "Set to true to expose only read-only tools",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "TESTIT_TOOLSETS",
+          "description": "Comma-separated toolsets to expose (default: default; also admin, bulk, all)",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
